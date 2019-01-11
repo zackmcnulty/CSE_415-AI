@@ -9,7 +9,7 @@ cycle_count = 0
 cycle_responses = ["And I am bored already...", \
                     "The value of this conversation is below epsilon.", \
                     "Your friends and a complete planer graph on 5 vertices must have something in common.", \
-                    "Morons do exist: proof by construction.",
+                    "Morons do exist: a trivial proof by construction.",
                     "My annoyance is monotonically increasing."] 
 
 cycle2_count = 0
@@ -56,12 +56,14 @@ def respond(remark):
         cycle_length = memory[::-1].index(remark) + 1
         response = "We have just completed a cycle of length " + str(cycle_length) + "!"
 
-    # if the other agent says something about themself ( "I" is the only subject of the sentence) 
-    # CYCLE #1
-    elif "i" in subs and len(subs) == 1:
-        global cycle_count
-        response = cycle_responses[cycle_count % len(cycle_responses)]
-        cycle_count += 1
+    elif "never" in remark or "none" in remark:
+        response = "Really? Where's your proof of nonexistence?"
+
+    elif "love" in remark:
+        response = "The math community has yet to rigourously define this \"love\" you speak of."
+
+    elif "proof" in remark:
+        response = "Let me guess. Another redditor to miraculuously solve the Riemman Hypothesis?"
 
     # CYCLE #2 (Also uses memory)
     elif len(kws.intersection(previous_topics)) != 0:
@@ -70,6 +72,14 @@ def respond(remark):
         response =  cycle2_responses[cycle2_count % len(cycle2_responses)]
         response = response.replace("BLANK", topic)
         cycle2_count += 1
+
+    # if the other agent says something about themself ( "I" is the only subject of the sentence) 
+    # CYCLE #1
+    elif "i" in subs and len(subs) == 1:
+        global cycle_count
+        response = cycle_responses[cycle_count % len(cycle_responses)]
+        cycle_count += 1
+
         
 
 
@@ -82,7 +92,7 @@ def respond(remark):
         response = ""
         response += random.choice(["Where", "Why", "How"])
         response += " do you "
-        response += random.choice(["live with yourself", "do that", "..."])
+        response += random.choice(["live with yourself", "do that", "...", "know that"])
         response += "?"
 
     
@@ -94,15 +104,23 @@ def respond(remark):
 
 def get_keywords(remark):
     words = set(remark.split(" "))
-    return words - get_subjects(remark) - get_verbs(remark)
+    return words - get_subjects(remark) - get_verbs(remark) -  \
+            get_w(remark) - set(["all", "too", "the", "a", "to", "at", "in", "about", "and", "of", "no" ])
 
 def remove_punctuation(remark):
     return "".join([s for s in remark if s not in ",.;:\"?!" ])
 
 def get_subjects(remark):
     words = set(remark.split(" "))
-    return words.intersection(set(["i", "you", "him", "her", "they", "them", "everyone"]))
+    return words.intersection(set(["i", "you", "him", "her", "they", "them", "everyone", "me", "my"]))
 
 def get_verbs(remark):
     words = set(remark.split(" "))
-    return words.intersection(set([""]))
+    return words.intersection(set(["go", "live", "do", "hope", "love", "stare", "feel"
+                                    "is", "are", "was", "were", 'go', 'have', 'be', 'try', 'eat', 'take', 'help',
+                  'make', 'get', 'jump', 'write', 'type', 'fill',
+                  'put', 'turn', 'compute', 'think', 'drink',
+                  'blink', 'crash', 'crunch', 'add', "find", "will", "don't", "ain't", "got", "speak", "speaking"]))
+def get_w(remark):
+    words = set(remark.split(" "))
+    return words.intersection(set(["why", "who", "where", "when", "how", "what"]))
