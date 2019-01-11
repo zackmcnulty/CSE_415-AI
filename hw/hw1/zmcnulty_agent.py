@@ -1,14 +1,17 @@
-
+import random
 # Where previous remarks are stored
 memory = []
+previous_topics = set([])
 
 # Where previous responses are stored
 responses = []
 cycle_count = 0
-cycle_responses = ["Who said I wanted to talk about you?", \
-                    "*Yawn*", \
-                    "Your parents must be so proud. \s", \
-                    "It's like you haven't figured out yet that I don't care."] 
+cycle_responses = ["And I am bored already...", \
+                    "The value of this conversation is below epsilon.", \
+                    "Your friends and a complete planer graph on 5 vertices must have something in common.", \
+                    "Morons do exist: proof by construction.",
+                    "My annoyance is monotonically increasing."] 
+
         
 
 def introduce():
@@ -24,6 +27,9 @@ def agentName():
     return "Pete"
 
 def respond(remark):
+    global memory
+    global previous_topics
+
     remark = remark.lower()
     no_punc = remove_punctuation(remark)
     kws = get_keywords(no_punc)
@@ -40,21 +46,37 @@ def respond(remark):
         response = "We have just completed a cycle of length " + str(cycle_length) + "!"
 
     # if the other agent says something about themself ( "I" is the only subject of the sentence) 
+    # CYCLE #1
     elif "i" in subs and len(subs) == 1:
         global cycle_count
         response = cycle_responses[cycle_count % 4]
         cycle_count += 1
-        
-    # If the other subject is not following the path of the Jedi.
-    elif "fear" in remark:
-        response = "Fear leads to anger, anger to hate, hate leads to suffering"
-    else:
+
+    #
+    # CYCLE #2 (Also uses memory)
+    elif len(kws.intersection(previous_topics)) != 0:
         response = "hi"
 
-    
+    # If the other subject is not following the path of the Jedi.
+    elif "fear" in remark:
+        response = "Fear leads to anger, anger to hate, hate leads to suffering, suffering leads to math."
 
+    # If you is the only subject in the remark
+    elif "you" in subs and len(subs) == 1:
+        response = "Don't tell me what to do. Live your own life."
+
+    # random choice response
+    else:
+        response = ""
+        response += random.choice(["Where", "Why", "How"])
+        response += " do you "
+        response += random.choice(["live with yourself", "do that", "..."])
+        response += "?"
+
+    
     memory.append(remark) 
     responses.append(response)
+    previous_topics = previous_topics.union(kws)
     return response
     
 
