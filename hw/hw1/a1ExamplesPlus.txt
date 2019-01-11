@@ -1,0 +1,4 @@
+# five_x_cubed_plus_1
+
+
+five_x_cubed_plus_1(2) -> 41
