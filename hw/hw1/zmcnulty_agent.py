@@ -12,12 +12,19 @@ cycle_responses = ["And I am bored already...", \
                     "Morons do exist: proof by construction.",
                     "My annoyance is monotonically increasing."] 
 
+cycle2_count = 0
+cycle2_responses = [ "this is a test BLANK", 
+        "also a test: BLANK"
+        
+        
+                    ]
+
         
 
 def introduce():
     return """
         My name is Pigeonhole Pete, your friendly neighborhood mathematician.
-        I was programmed by Zachary McNulty to solve the worlds most difficult problems
+        I was programmed by Zachary McNulty to solve the world's most difficult problems,
         but instead I find myself talking to you. When you inevitably bore me, contact
         zmcnulty@uw.edu so you can bother someone else.
         What do you want now?\n
@@ -39,6 +46,10 @@ def respond(remark):
     if len(remark) == 0:
         response =  "You're a quiet one aren't you? And they said mathematicians are socially awkward."
 
+    # If the other subject is not following the path of the Jedi.
+    elif "fear" in remark:
+        response = "Fear leads to anger, anger to hate, hate leads to suffering, suffering leads to math."
+
     # if the other agent says something they have already said before verbatim
     # USES MEMORY
     elif remark in memory:
@@ -49,17 +60,18 @@ def respond(remark):
     # CYCLE #1
     elif "i" in subs and len(subs) == 1:
         global cycle_count
-        response = cycle_responses[cycle_count % 4]
+        response = cycle_responses[cycle_count % len(cycle_responses)]
         cycle_count += 1
 
-    #
     # CYCLE #2 (Also uses memory)
     elif len(kws.intersection(previous_topics)) != 0:
-        response = "hi"
+        global cycle2_count
+        topic = random.choice(list(kws.intersection(previous_topics)))
+        response =  cycle2_responses[cycle2_count % len(cycle2_responses)]
+        response = response.replace("BLANK", topic)
+        cycle2_count += 1
+        
 
-    # If the other subject is not following the path of the Jedi.
-    elif "fear" in remark:
-        response = "Fear leads to anger, anger to hate, hate leads to suffering, suffering leads to math."
 
     # If you is the only subject in the remark
     elif "you" in subs and len(subs) == 1:
