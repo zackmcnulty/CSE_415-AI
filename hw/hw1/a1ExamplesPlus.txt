@@ -1,4 +1,45 @@
-# five_x_cubed_plus_1
+	1)
+		five_x_cubed_plus_1(2) -> 41
+		five_x_cubed_plus_1(3) -> 136
+		five_x_cubed_plus_1(27) -> 98416
+		five_x_cubed_plus_1(21231) -> 47849935346956
+
+	2)
+		pair_off([2, 5, 1.5, 100, 3, 8, 7, 1, 1, 0, -2]) ->
+		[[2, 5], [1.5, 100], [3, 8], [7, 1], [1, 0], [-2]]
 
 
-five_x_cubed_plus_1(2) -> 41
+		pair_off([2,2,4,4,6,6,8,8]) ->
+		[[2, 2], [4, 4], [6, 6], [8, 8]]
+
+		pair_off([1, [2,4, [7,8]], "hello", True, "10", 13, 14, "last"]) ->
+		[[1, [2, 4, [7, 8]]], ['hello', True], ['10', 13], [14, 'last']]
+
+		pair_off([]) ->
+		[]	
+		
+		pair_off([1]) ->
+		[[1]]	
+
+	3)
+		
+		mystery_code("abc Iz th1s Secure? n0, no, 9!") ->
+  		TUV bS MA1L lXVNKX? G0, GH, 9!
+		
+		mystery_code("129013^!@#$%^&*()_-=+][{]};:'/?.,><") ->
+		129013^!@#$%^&*()_-=+][{]};:'/?.,><
+		
+		mystery_code("aopz pz hu pualylzapun lehtwsl!") ->
+		THIS IS AN INTERESTING EXAMPLE!
+		
+
+	4)
+		past_tense(['program', 'debug', 'execute', 'crash', 'repeat', 'eat']) ->
+		['programmed', 'debugged', 'executed', 'crashed', 'repeated', 'ate']
+
+		past_tense(['like', 'smell', 'sweep', 'wash']) ->
+		['liked', 'smelled', 'sweeped', 'washed']
+
+		past_tense(['try', 'fly', 'be', 'am', 'are', 'is', 'eats', 'quit', 'sully', 'slay']) ->
+		['tried', 'flied', 'been', 'was', 'were', 'was', 'ate', 'quited', 'sullied', 'slayed']
+

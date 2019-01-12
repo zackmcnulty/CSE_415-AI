@@ -67,7 +67,7 @@ def respond(remark):
 
     # if the response includes proof
     elif "proof" in remark:
-        response = "Let me guess. Another redditor to miraculuously solve the Riemman Hypothesis?"
+        response = "Let me guess. Another redditor to miraculously solve the Riemann Hypothesis?"
 
     # CYCLE #2 (Also uses memory)
     # if a previous topic is mentioned, make a comment about it.
@@ -98,6 +98,9 @@ def respond(remark):
     elif "problem" in remark:
         response = "Problem? BLANK is hardly a problem? Call me back when you've worked on it for 100 years."
         response = response.replace("BLANK", random.choice(list(kws)))
+
+    elif "today" in remark:
+        response = "That reminds me that today I have to submit my paper for publication. Again."
 
     # random choice response
     else:
