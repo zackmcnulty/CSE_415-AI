@@ -86,6 +86,8 @@ def respond(remark):
         response = cycle_responses[cycle_count % len(cycle_responses)]
         cycle_count += 1
 
+    elif "are you a boy" in remark:
+        response = "Of course I'm a boy are you blind?"
 
     # If you is the only subject in the remark
     elif "you" in subs and len(subs) == 1:
@@ -93,6 +95,9 @@ def respond(remark):
 
     elif "math" in remark:
         response = "Oh now you have got my attention."
+    
+    elif "feel" in remark:
+        response = "Well I feel bored"
 
     
     elif "problem" in remark:
@@ -104,11 +109,10 @@ def respond(remark):
 
     # random choice response
     else:
-        response = ""
-        response += random.choice(["When", "Why", "How"])
-        response += " do you "
-        response += random.choice(["speak like that", "do that", "think that", "want that"])
-        response += "?"
+        response = random.choice(["How are you, I guess, is what a normal person would ask", 
+                                    "Why do you look like you're about to sing", 
+                                    "I will", 
+                                    "Shrek is love ... how did you make me say that..."])
 
     
     memory.append(remark) 
