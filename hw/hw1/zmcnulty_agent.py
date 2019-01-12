@@ -86,6 +86,7 @@ def respond(remark):
         response = cycle_responses[cycle_count % len(cycle_responses)]
         cycle_count += 1
 
+    # If the other person asks my gender
     elif "are you a boy" in remark:
         response = "Of course I'm a boy are you blind?"
 
@@ -93,6 +94,7 @@ def respond(remark):
     elif "you" in subs and len(subs) == 1:
         response = "Don't tell me what to do. Live your own life."
 
+    # If 
     elif "math" in remark:
         response = "Oh now you have got my attention."
     
@@ -110,8 +112,8 @@ def respond(remark):
     # random choice response
     else:
         response = random.choice(["How are you, I guess, is what a normal person would ask", 
-                                    "Why do you look like you're about to sing", 
-                                    "I will", 
+                                    "Is it just me or does he look like he is about to sing", 
+                                    "I will never do this again.", 
                                     "Shrek is love ... how did you make me say that..."])
 
     
