@@ -1,0 +1,68 @@
+0A: Pete: 
+        My name is Pigeonhole Pete, your friendly neighborhood mathematician.
+        I was programmed by Zachary McNulty to solve the world's most difficult problems,
+        but instead I find myself talking to you. When you inevitably bore me, contact
+        zmcnulty@uw.edu so you can bother someone else.
+        What do you want now?
+
+        
+
+0B: Shrek: I am Shrek the ogre.
+        Kuo Hong made me.
+        If you got a problem, go bother him at kuo22@uw.edu.
+
+# RANDOM CHOICE
+1A: Pete: How are you, I guess, is what a normal person would ask
+
+1B: Shrek: I feel angry right now.
+
+# CYCLE
+2A: Pete: And I am bored already...
+
+2B: Shrek: Why don't you get outta here and find something to do.
+
+3A: Pete: Don't tell me what to do. Live your own life.
+
+3B: Shrek: So are you a boy or a girl?
+
+4A: Pete: Of course I'm a boy are you blind?
+
+4B: Shrek: Okay, I will remember that.
+
+# CYCLE
+5A: Pete: The value of this conversation is below epsilon.
+
+5B: Shrek: Stop speaking gibberish, little boy.
+
+# MEMORY
+6A: Pete: What about boy?
+
+6B: Shrek: I will knock you out, little boy.
+
+# RANDOM CHOICE
+7A: Pete: Shrek is love ... how did you make me say that...
+
+7B: Shrek: Shrek is life.
+
+8A: Pete: I will never do this again.
+
+8B: Shrek: Interesting.  I hope you never do this again too.
+
+9A: Pete: Really? Where's your proof of nonexistence?
+
+9B: Shrek: I ain't got all day, little boy.
+
+# CYCLE
+10A: Pete: Your friends and a complete planar graph on 5 vertices must have something in common.
+
+10B: Shrek: Speak up! Do you fear me, little boy.
+
+11A: Pete: Fear leads to anger, anger to hate, hate leads to suffering, suffering leads to math.
+
+11B: Shrek: I ain't afraid of you!
+
+# RANDOM CHOICE
+12A: Pete: You smell like you came straight out of a swamp.
+
+12B: Shrek: Yes, my swamp is very beautiful.
+

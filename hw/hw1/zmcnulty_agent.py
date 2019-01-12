@@ -94,25 +94,32 @@ def respond(remark):
     elif "you" in subs and len(subs) == 1:
         response = "Don't tell me what to do. Live your own life."
 
-    # If 
+    # If math is included in the response, Pete gets excited
     elif "math" in remark:
         response = "Oh now you have got my attention."
     
+    # If feel is in the response, Pete gets rude agian
     elif "feel" in remark:
         response = "Well I feel bored"
 
-    
+    # If you complain about your problems, Pete will complain about his
     elif "problem" in remark:
         response = "Problem? BLANK is hardly a problem? Call me back when you've worked on it for 100 years."
         response = response.replace("BLANK", random.choice(list(kws)))
 
+    # If you mention today, Pete will remember he forgot to publish his paper.
     elif "today" in remark:
         response = "That reminds me that today I have to submit my paper for publication. Again."
 
-    # random choice response
+    # random choice response: if Pete doesn't know what to say, he will spit out the first
+    # thing that comes to his mind.
     else:
         response = random.choice(["How are you, I guess, is what a normal person would ask", 
-                                    "Is it just me or does he look like he is about to sing", 
+                                    "What is 2+2??", 
+                                    "Is it just me or does he look like hes about to sing?",
+                                    "You smell like you came straight out of a swamp.",
+                                    "What is with the princess tattoo on your thigh...",
+                                    "Doesn't that donkey usually follow you around?",
                                     "I will never do this again.", 
                                     "Shrek is love ... how did you make me say that..."])
 
@@ -127,7 +134,7 @@ def respond(remark):
 def get_keywords(remark):
     words = set(remark.split(" "))
     return words - get_subjects(remark) - get_verbs(remark) -  \
-            get_w(remark) - set(["all", "too", "the", "a", "to", "at", "in", "about", "and", "of", "no" ])
+            get_w(remark) - set(["all", "too", "the", "a", "to", "at", "in", "about", "and", "of", "no" , "oh"])
 
 def remove_punctuation(remark):
     return "".join([s for s in remark if s not in ",.;:\"?!" ])
