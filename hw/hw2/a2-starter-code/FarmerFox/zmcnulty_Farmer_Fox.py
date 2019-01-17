@@ -16,12 +16,12 @@ the Farmer, Fox, Chicken, and Grain.
 
 LEFT = 0 # index location storing objects on left side
 RIGHT = 1 # index location storing objects on right side
-abbr_converter = {"F":"Farmer", "f":"fox", "c":"chicken", "g", "grain", "":"nothing"}
+abbr_converter = {"F":"Farmer", "f":"fox", "c":"chicken", "g":"grain", "":"nothing"}
 
 class State:
 
     def __init__(self, start_state = None):
-        if start_state = None:
+        if start_state == None:
             start_state = ["Fcfg", ""]
 
         # Keeps track of objects on each side of river:
@@ -66,10 +66,10 @@ class State:
     # direction = which way to move across river : 0 -> move left to right, 1 -> move right to left
     def move(self, objects, direction):
         # remove from this side
-        self.state[direction] = "".join(sorted([o for o in self.state[direction] if o not in objects))
+        self.state[direction] = "".join(sorted([o for o in self.state[direction] if o not in objects]))
 
         # and place on other side of river
-        self.state[1-direction] = "".join(sorted(self.state[1-direction] + objects]))
+        self.state[1-direction] = "".join(sorted(self.state[1-direction] + objects))
 
 
 # where s is a State
@@ -117,16 +117,16 @@ possible_moves = ["F", "Fc", "Fg", "Ff"]
 
 OPERATORS = [Operator(
     # string definition
-    "Move the " + " and the ".join([abbr_converter[o]] for o in move) + "from the " + direction[0] + " to the " + direction[1] "side of the river."
+    "Move the " + " and the ".join([abbr_converter[o] for o in move]) + " from the " + direction[0] + " to the " + direction[1] +  " side of the river.\n",
     
     # precondition
-    lambda s, d=int(direction[0] == "right"): s.can_move(move, d)
+    lambda s, d=int(direction[0] == "right"): s.can_move(move, d),
 
     # move
     lambda s, d=int(direction[0] == "right"): s.move(move, d)
     )
         
-    for move in possible_moves for direction in [("left", "right"), ("right", "left")]]
+    for move in possible_moves for direction in [("left", "right"), ("right", "left")] ]
 
 #<\OPERATORS>
 
