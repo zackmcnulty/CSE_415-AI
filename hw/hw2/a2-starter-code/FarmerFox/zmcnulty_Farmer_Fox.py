@@ -37,7 +37,7 @@ grain in such a precarious position.
 
 LEFT = 0 # index location storing objects on left side
 RIGHT = 1 # index location storing objects on right side
-abbr_converter = {"F":"Farmer", "f":"fox", "c":"chicken", "g":"grain", "":"nothing"}
+abbr_converter = {"F":"Farmer", "f":"fox", "c":"chicken", "g":"grain"}
 
 class State:
 
@@ -59,8 +59,8 @@ class State:
             return True
 
     def __str__(self):
-        txt = "\nObjects on the left bank: " + " ".join([ abbr_converter[o] for o in self.state[LEFT] ]) + "\n"
-        txt += "Objects on the right bank: " + " ".join([ abbr_converter[o] for o in self.state[RIGHT] ]) + "\n" 
+        txt = "\n Left bank: " + ", ".join([ abbr_converter[o] for o in self.state[LEFT] ]) + "\n"
+        txt += "Right bank: " + ", ".join([ abbr_converter[o] for o in self.state[RIGHT] ]) + "\n" 
         return txt 
 
     def __hash__(self):
@@ -95,10 +95,13 @@ class State:
     # direction = which way to move across river : 0 -> move left to right, 1 -> move right to left
     def move(self, objects, direction):
         # remove from this side
-        self.state[direction] = "".join(sorted([o for o in self.state[direction] if o not in objects]))
+        copy = self.copy()
+
+        copy.state[direction] = "".join(sorted([o for o in self.state[direction] if o not in objects]))
 
         # and place on other side of river
-        self.state[1-direction] = "".join(sorted(self.state[1-direction] + objects))
+        copy.state[1-direction] = "".join(sorted(self.state[1-direction] + objects))
+        return copy 
 
 
 # where s is a State
@@ -106,7 +109,7 @@ def goal_test(s):
     '''
     If all the objects are on the RIGHT, then we are in a goal state.
     '''
-    if len(self.state[LEFT]) == 0:
+    if len(s.state[LEFT]) == 0:
         return True
 
 def goal_message(s):
@@ -134,6 +137,13 @@ class Operator:
     def apply(self, s):
         return self.state_change(s)
 
+    # to string; for debugging
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return self.name
+
 #</COMMONCODE>
 
 
@@ -149,10 +159,10 @@ OPERATORS = [Operator(
     "Move the " + " and the ".join([abbr_converter[o] for o in move]) + " from the " + direction[0] + " to the " + direction[1] +  " side of the river.\n",
     
     # precondition
-    lambda s, d=int(direction[0] == "right"): s.can_move(move, d),
+    lambda s, m=move, d=int(direction[0] == "right"): s.can_move(m, d),
 
     # move
-    lambda s, d=int(direction[0] == "right"): s.move(move, d)
+    lambda s, m=move, d=int(direction[0] == "right"): s.move(m, d)
     )
         
     for move in possible_moves for direction in [("left", "right"), ("right", "left")] ]
