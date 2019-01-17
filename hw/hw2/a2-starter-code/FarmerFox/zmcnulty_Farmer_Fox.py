@@ -6,7 +6,28 @@ the Farmer, Fox, Chicken, and Grain.
 '''
 
 #<METADATA>
-# necessary or not?
+SOLUZION_VERSION = "1.0"
+PROBLEM_NAME = "Farmer, fox, chicken, and the grain"
+PROBLEM_VERSION = "1.0"
+PROBLEM_AUTHORS = ['Z. McNulty']
+PROBLEM_CREATION_DATE = "17-JAN-2019"
+
+# The following field is mainly for the human solver, via either the Text_SOLUZION_Client.
+# or the SVG graphics client.
+PROBLEM_DESC=\
+'''
+The <b> "Farmer, fox, chicken, and the grain" </b> problem is a traditional
+puzzle in which the player begins with a Farmer, fox, chicken, and bag of
+grain on one side of a river. Using a boat which can transport only a single
+object at a time, the Farmer must transport all his possessions across the river.
+However, at any given time if the fox and chicken are left without the Farmer
+the chicken will be eaten, and if the grain and chicken are left without the
+Farmer the chicken will eat the grain. The Farmer wants to avoid both these
+situations while getting across the river. In the formulation presented here,
+the computer will not allow you to make a move that places your chicken or your
+grain in such a precarious position.
+
+'''
 #</METADATA>
 
 #<COMMONDATA>
@@ -60,6 +81,14 @@ class State:
             if obj not in self.state[direction]:
                 return False
         else:
+            # we cannot leave the fox and chicken alone
+            if "f" in self.state[direction] and "c" in self.state[direction] and not ("f" in objects or "c" in objects):
+                return False
+
+            # we cannot leave the chicken and the grain alone 
+            if "g" in self.state[direction] and "c" in self.state[direction] and not ("g" in objects or "c" in objects):
+                return False
+
             return True 
 
     # objects = string of the abbreviated objects to move across river: i.e. Fcg = move Farmer, chicken, and grain
