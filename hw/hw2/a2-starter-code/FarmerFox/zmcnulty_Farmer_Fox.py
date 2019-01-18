@@ -7,7 +7,7 @@ the Farmer, Fox, Chicken, and Grain.
 
 #<METADATA>
 SOLUZION_VERSION = "1.0"
-PROBLEM_NAME = "Farmer, fox, chicken, and the grain"
+PROBLEM_NAME = "Farmer, Fox, Chicken, and Grain"
 PROBLEM_VERSION = "1.0"
 PROBLEM_AUTHORS = ['Z. McNulty']
 PROBLEM_CREATION_DATE = "17-JAN-2019"
@@ -16,7 +16,7 @@ PROBLEM_CREATION_DATE = "17-JAN-2019"
 # or the SVG graphics client.
 PROBLEM_DESC=\
 '''
-The <b> "Farmer, fox, chicken, and the grain" </b> problem is a traditional
+The <b> "Farmer, Fox, Chicken, and Grain" </b> problem is a traditional
 puzzle in which the player begins with a Farmer, fox, chicken, and bag of
 grain on one side of a river. Using a boat which can transport only a single
 object at a time, the Farmer must transport all his possessions across the river.
@@ -123,11 +123,11 @@ class Operator:
 
     # name is a string that uniquely defines operator
     # precondition is a function that evaluates true or false base on State
-    # state_change is a function that defines how the operator changes the state (if valid)
-    def  __init__(self, name, precond, state_change):
+    # state_transf is a function that defines how the operator changes the state (if valid)
+    def  __init__(self, name, precond, state_transf):
         self.name = name
         self.precond = precond
-        self.state_change = state_change
+        self.state_transf = state_transf
 
     # s is a State; checks if operator valid in current state
     def is_applicable(self, s):
@@ -135,7 +135,7 @@ class Operator:
 
     # s is a State; applys operator to given state and returns new state
     def apply(self, s):
-        return self.state_change(s)
+        return self.state_transf(s)
 
     # to string; for debugging
     def __str__(self):
