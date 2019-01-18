@@ -57,22 +57,21 @@ def BFS(initial_state):
       path = backtrace(S)
       print('Length of solution path found: '+str(len(path)-1)+' edges')
       return
+
     COUNT += 1
 
 # STEP 4. Generate the list L of successors of S and delete 
-#         from L those states already appearing on CLOSED.
+#         from L those states already appearing on CLOSED or OPEN.
     L = []
     for op in Problem.OPERATORS:
       if op.precond(S):
         new_state = op.state_transf(S)
-        if not (new_state in CLOSED):
+        if not (new_state in CLOSED) and not (new_state in OPEN):
           L.append(new_state)
           BACKLINKS[new_state] = S
 
-# STEP 5. Delete from L any members of L that occur in OPEN.
-#         Insert all members of L at the end of OPEN.
-    L = [l for l in L if not in OPEN]
-    OPEN = OPEN + L
+# STEP 5. Insert all members of L at the end of OPEN.
+    OPEN.extend(L)
     print_state_list("OPEN", OPEN)
 
 # STEP 6. Go to Step 2.
@@ -101,6 +100,6 @@ def report(open, closed, count):
   print("COUNT = "+str(count))
 
 if __name__=='__main__':
-  runDFS()
+  runBFS()
 
 
