@@ -22,23 +22,31 @@ else:
   import importlib
   Problem = importlib.import_module(sys.argv[1])
 
-print("\nWelcome to ItrDFS")
+print("\nWelcome to IDDFS")
 # count keeps track of the number of nodes visited
-COUNT = None
-BACKLINKS = {}
 
 def runIDDFS():
   initial_state = Problem.CREATE_INITIAL_STATE()
   print("Initial State:")
   print(initial_state)
-  global COUNT, BACKLINKS, MAX_OPEN_LENGTH, MAX_DEPTH
+
+  global COUNT, BACKLINKS, MAX_OPEN_LENGTH, MAX_DEPTH, DEPTHS
   solved = False
   COUNT = 0
   MAX_OPEN_LENGTH = 0
-  MAX_DEPTH = -1 
+  MAX_DEPTH = 0 
+
+
+  # Backlinks keeps track of the previous node in the shortest path to state S
+  # DEPTHS keeps track of the length of the shortest path to state S
+  # these BOTH persist throughout each run of the IDDFS algorithm as the max depth
+  # is increased.
+  BACKLINKS = {}
+  DEPTHS = {}
+  DEPTHS[initial_state] = 0
+
   while not solved:
     MAX_DEPTH += 1
-    BACKLINKS = {}
     solved = IDDFS(initial_state)
     
 
@@ -46,23 +54,24 @@ def runIDDFS():
   print('MAX_OPEN_LENGTH = '+str(MAX_OPEN_LENGTH))
 
 def IDDFS(initial_state):
-  global COUNT, BACKLINKS, MAX_OPEN_LENGTH, MAX_DEPTH
+  global COUNT, BACKLINKS, MAX_OPEN_LENGTH, MAX_DEPTH, DEPTHS
+  print(DEPTHS)
 
-# STEP 1. Put the start state on a list OPEN
-  OPEN = [initial_state]
+# STEP 1. Put all the nodes at the previous MAX_DEPTH on OPEN
+#         i.e. start next search where the previous one left off
+  OPEN = [key for key in DEPTHS if DEPTHS[key] == (MAX_DEPTH - 1)]
   BACKLINKS[initial_state] = None
-  DEPTHS = {}
-  DEPTHS[initial_state] = 0
 
-# STEP 2. If OPEN is empty, output “DONE” and stop.
+
+# STEP 2. If OPEN is empty, output “DONE” and stop. Restart algorithm with higher max depth
   while OPEN != []:
-#    report(OPEN, CLOSED, COUNT)
+    report(OPEN, COUNT)
     if len(OPEN)>MAX_OPEN_LENGTH: MAX_OPEN_LENGTH = len(OPEN)
 
 # STEP 3. Select the first state on OPEN and call it S.
 #         Delete S from OPEN.
-#         Put S on CLOSED.
 #         If S is a goal state, output its description
+
     S = OPEN.pop(0)
 
     if Problem.GOAL_TEST(S):
@@ -70,11 +79,15 @@ def IDDFS(initial_state):
       path = backtrace(S)
       print('Length of solution path found: '+str(len(path)-1)+' edges')
       return True
+
+    # count number of nodes expanded
     COUNT += 1
 
-# STEP 4. Generate the list L of successors of S and delete 
-#         from L those states already appearing on CLOSED.
-# ONLY ADD SUCCESSORS IF DEPTH OF S < max depth!
+
+# STEP 4. Generate the list L of successors of S 
+#           DONT add S's successors if S is already at the max depth
+#           Only add a node to open if it has not be expanded yet (DEPTH not known)
+#           or if we found a shorter path to it (old depth < new depth)
 
     if DEPTHS[S] < MAX_DEPTH:
         L = []
@@ -85,11 +98,10 @@ def IDDFS(initial_state):
             # revisit a node if its calculated DEPTH changes because this means
             # we can possibly travel farther down this branch
 
-
             if not (new_state in DEPTHS) or DEPTHS[new_state] > DEPTHS[S] + 1:
               L.append(new_state)
               try:
-                DEPTHS[new_state] = min([new_state], DEPTHS[S] + 1)
+                  DEPTHS[new_state] = min(DEPTHS[new_state], DEPTHS[S] + 1)
               except:
                 DEPTHS[new_state] = DEPTHS[S] + 1
 
@@ -104,7 +116,6 @@ def IDDFS(initial_state):
     # STEP 6. Go to Step 2.
 
 # max depth reached without finding solution; increase max depth and repeat.
-  print(DEPTHS)
   print("max depth of ", MAX_DEPTH, " reached. Expanding depth and repeating process!")
   return False
 
@@ -131,9 +142,8 @@ def backtrace(S):
     print(s)
   return path    
   
-def report(open, closed, count):
+def report(open, count):
   print("len(OPEN)="+str(len(open)), end='; ')
-  print("len(CLOSED)="+str(len(closed)), end='; ')
   print("COUNT = "+str(count))
 
 if __name__=='__main__':
