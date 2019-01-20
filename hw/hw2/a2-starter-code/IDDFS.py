@@ -1,6 +1,8 @@
 # Issue is that something is being assigned a depth before the min path to it
 # is found, and then that is erroneously used to find depths of those after it
 
+# use recursive backtracking?
+
 
 ''' IDDFS.py
 by Zachary McNultyJ
@@ -21,6 +23,7 @@ else:
   Problem = importlib.import_module(sys.argv[1])
 
 print("\nWelcome to ItrDFS")
+# count keeps track of the number of nodes visited
 COUNT = None
 BACKLINKS = {}
 
@@ -47,14 +50,13 @@ def IDDFS(initial_state):
 
 # STEP 1. Put the start state on a list OPEN
   OPEN = [initial_state]
-  CLOSED = []
   BACKLINKS[initial_state] = None
   DEPTHS = {}
   DEPTHS[initial_state] = 0
 
 # STEP 2. If OPEN is empty, output “DONE” and stop.
   while OPEN != []:
-    report(OPEN, CLOSED, COUNT)
+#    report(OPEN, CLOSED, COUNT)
     if len(OPEN)>MAX_OPEN_LENGTH: MAX_OPEN_LENGTH = len(OPEN)
 
 # STEP 3. Select the first state on OPEN and call it S.
@@ -62,8 +64,6 @@ def IDDFS(initial_state):
 #         Put S on CLOSED.
 #         If S is a goal state, output its description
     S = OPEN.pop(0)
-    if S not in CLOSED:
-        CLOSED.append(S)
 
     if Problem.GOAL_TEST(S):
       print(Problem.GOAL_MESSAGE_FUNCTION(S))
@@ -86,9 +86,13 @@ def IDDFS(initial_state):
             # we can possibly travel farther down this branch
 
 
-            if not (new_state in CLOSED) or DEPTHS[new_state] > DEPTHS[S] + 1:
+            if not (new_state in DEPTHS) or DEPTHS[new_state] > DEPTHS[S] + 1:
               L.append(new_state)
-              DEPTHS[new_state] = DEPTHS[S] + 1
+              try:
+                DEPTHS[new_state] = min([new_state], DEPTHS[S] + 1)
+              except:
+                DEPTHS[new_state] = DEPTHS[S] + 1
+
               BACKLINKS[new_state] = S
 
 
@@ -100,6 +104,7 @@ def IDDFS(initial_state):
     # STEP 6. Go to Step 2.
 
 # max depth reached without finding solution; increase max depth and repeat.
+  print(DEPTHS)
   print("max depth of ", MAX_DEPTH, " reached. Expanding depth and repeating process!")
   return False
 
