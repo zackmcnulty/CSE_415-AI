@@ -13,6 +13,7 @@ Iterative Depth-First Search of a problem space.
 
 import sys
 
+# choose your problem
 if sys.argv==[''] or len(sys.argv)<2:
 #  import EightPuzzle as Problem
   import TowersOfHanoi as Problem
