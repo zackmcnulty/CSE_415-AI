@@ -108,7 +108,7 @@ class State:
 
   # we can always rotate the cube in any direction we want;
   # there are no restrictions
-  def can_move(self,dir):
+  def can_move(self,face, dir):
       return True
 
   # Copies self, and performs the given move on the copy, returning that copy
@@ -118,9 +118,9 @@ class State:
   # we have to rotate its faces left, and if it moves up/down to its new place,
   # we have to rotate its faces right. This rotation is not required with the Top/bottom
   # faces as these faces are where the reference frame is set
-  def move(self,dir):
+  def move(self,face, dir):
     news = self.copy()
-    if dir == 'F':
+    if  face == 'F':
         # move front face 90 clockwise
         # Blocks 0 --> 1, 1-->2, 2-->3, 3-->0
         temp = news.d[0]
@@ -136,7 +136,7 @@ class State:
         news.d[1].rotate_right()
         news.d[0].rotate_left()
 
-    elif dir == 'U':
+    elif face == 'U':
         # move top face 90 clockwise
         # Blocks 3 --> 2, 2-->6, 6-->7, 7-->3
         temp = news.d[3]
@@ -145,7 +145,7 @@ class State:
         news.d[6] = news.d[2]
         news.d[2] = temp
 
-    elif dir == 'R':
+    elif face == 'R':
         # move left face 90 clockwise
         # Blocks 0 --> 3, 3--7, 7-->4, 4-->0
 
@@ -163,7 +163,7 @@ class State:
         news.d[0].rotate_right()
         news.d[7].rotate_right()
 
-    elif dir == 'L':
+    elif face == 'L':
         # move right face 90 clockwise
         # Blocks 2-->1, 1-->5, 5-->6, 6-->2
         temp = news.d[2]
@@ -178,7 +178,7 @@ class State:
         news.d[6].rotate_left()
         news.d[1].rotate_left()
 
-    elif dir == 'B':
+    elif face == 'B':
         # move back face 90 clockwise
         # Blocks 7-->6, 6-->5, 5-->4, 4-->7
         temp = news.d[7]
@@ -193,7 +193,7 @@ class State:
         news.d[7].rotate_left()
         news.d[5].rotate_left()
 
-    elif dir == 'D': 
+    elif face  == 'D': 
         # move bottom face 90 clockwise
         # Blocks 1-->0, 0-->4, 4-->5, 5-->1
         temp = news.d[1]
@@ -201,6 +201,10 @@ class State:
         news.d[5] = news.d[4]
         news.d[4] = news.d[0]
         news.d[0] = temp
+
+    if dir == 'ccw':
+        news = news.move(face, 'cw')
+        news = news.move(face, 'cw')
 
     return news # return new state
     
@@ -239,8 +243,9 @@ class Operator:
 # returns the scarmbled state
 def mix_cube(n, S):
     for _ in range(n):
-        direction = random.choice(['F','B', 'U', 'D', 'L', 'R'])
-        S = S.move(direction)
+        face  = random.choice(['F','B', 'U', 'D', 'L', 'R'])
+        direction = random.choice(['cw', 'ccw'])
+        S = S.move(face, direction)
 
     return S
 
@@ -278,13 +283,13 @@ CREATE_INITIAL_STATE = lambda: init_state
 # clockwise 
 
 possible_moves = ['F','B', 'U', 'D', 'L', 'R']
-OPERATORS = [Operator('Move the ' + str(abbr_converter[move]) + ' face in the clockwise direction.',
-                      lambda s,face=move: s.can_move(face),
+OPERATORS = [Operator('Move the ' + str(abbr_converter[face]) + ' face in the ' + str(abbr_converter[direction]) + ' direction.',
+                      lambda s,face1=face, d1=direction: s.can_move(face1, d1),
                       # The default value construct is needed
                       # here to capture the value of dir
                       # in each iteration of the list comp. iteration.
-                      lambda s,face=move: s.move(face))
-             for move in possible_moves]
+                      lambda s,face1=face, d1 = direction: s.move(face1, d1))
+             for face in possible_moves for direction in ['cw', 'ccw']]
 #</OPERATORS>
 
 #<GOAL_TEST> (optional)

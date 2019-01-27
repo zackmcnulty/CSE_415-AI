@@ -18,7 +18,7 @@ useful for a closer look at execution, or if preparing some
 debugging infrastructure before adding extensions, such as for A*.
 '''
 
-VERBOSE = True  # Set to True to see progress; but it slows the search.
+VERBOSE = False  # Set to True to see progress; but it slows the search.
 
 import sys
 

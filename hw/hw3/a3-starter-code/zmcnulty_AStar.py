@@ -20,6 +20,7 @@ debugging infrastructure before adding extensions, such as for A*.
 VERBOSE = False  # Set to True to see progress; but it slows the search.
 
 import sys
+import time
 
 if sys.argv==[''] or len(sys.argv)<2:
   import EightPuzzle as Problem
@@ -119,9 +120,13 @@ def runAstar():
   COUNT = 0
   BACKLINKS = {}
   MAX_OPEN_LENGTH = 0
+
+  start_time = time.time()
+
   SOLUTION_PATH = Astar(initial_state)
   print(str(COUNT)+" states expanded.")
   print('MAX_OPEN_LENGTH = '+str(MAX_OPEN_LENGTH))
+  print("runtime (seconds): ", time.time() - start_time)
   #print("The CLOSED list is: ", ''.join([str(s)+' ' for s in CLOSED]))
 
 def Astar(initial_state):

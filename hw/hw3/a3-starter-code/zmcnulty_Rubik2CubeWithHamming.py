@@ -1,10 +1,21 @@
 
 
+import time
+from zmcnulty_Rubik2Cube import *
 
-from Rubik2Cube import *
 
-
-# Heuristic Function
-#
+# Hamming Heuristic Function
+# NOT admissiable in this problen. Consider the case where we are one turn away from the goal:
+# many more than one face will be out of place
 def h(S):
-    state_str = str(S)
+    state_str = "".join([c for c in str(S) if c.isdigit()])
+    goal_str = "111100225533002255334444" 
+    
+    count = 0
+    for i, digit in enumerate(state_str):
+        if digit != goal_str[i]:
+            count += 1
+
+    return count
+
+
