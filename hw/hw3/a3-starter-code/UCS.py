@@ -1,13 +1,14 @@
-''' zmcnulty_AStar.py
- A* search through problem space.
+''' UCS.py
+Uniform Cost Search of a problem space.
  Version 0.2, January 23, 2019.
- Zachary McNulty, Univ. of Washington.
+ Steve Tanimoto, Univ. of Washington.
+ Paul G. Allen School of Computer Science and Engineering
 
  Usage:
- python3 zmcnulty_AStar.py FranceWithCosts
+ python3 UCS.py FranceWithCosts
 This implementation does not reconsider a state once it has
 been put on CLOSED list.  If this implementation is extended
-to implement A*, and it is to work with all heuristics,
+to implement A*, and it is to work will all heuristics,
 including non-admissible ones, then when a state is regenerated
 that was already put on the CLOSED list, it may need reconsideration
 if the new priority value is lower than the old one.
@@ -17,7 +18,7 @@ useful for a closer look at execution, or if preparing some
 debugging infrastructure before adding extensions, such as for A*.
 '''
 
-VERBOSE = False  # Set to True to see progress; but it slows the search.
+VERBOSE = True  # Set to True to see progress; but it slows the search.
 
 import sys
 
@@ -27,10 +28,7 @@ else:
   import importlib
   Problem = importlib.import_module(sys.argv[1])
 
-# Heuristic related to the given problem
-h = Problem.h
-
-print("\nWelcome to A* Search!")
+print("\nWelcome to UCS")
 
 COUNT = None # Number of nodes expanded.
 MAX_OPEN_LENGTH = None # How long OPEN ever gets.
@@ -40,8 +38,6 @@ BACKLINKS = {} # Predecessor links, used to recover the path.
 
 # The value g(s) represents the cost along the best path found so far
 # from the initial state to state s.
-# this should NOT include our heuristic
-# ONLY OUR PRIORITIES (in priority queue) should include heuristic
 g = {} # We will use a global hash table to associate g values with states.
 
 class My_Priority_Queue:
@@ -109,9 +105,9 @@ class My_Priority_Queue:
     txt += ']'
     return txt
 
-def runAstar():
+def runUCS():
   '''This is an encapsulation of some setup before running
-  Astar, plus running it and then printing some stats.'''
+  UCS, plus running it and then printing some stats.'''
   initial_state = Problem.CREATE_INITIAL_STATE()
   print("Initial State:")
   print(initial_state)
@@ -119,12 +115,12 @@ def runAstar():
   COUNT = 0
   BACKLINKS = {}
   MAX_OPEN_LENGTH = 0
-  SOLUTION_PATH = Astar(initial_state)
+  SOLUTION_PATH = UCS(initial_state)
   print(str(COUNT)+" states expanded.")
   print('MAX_OPEN_LENGTH = '+str(MAX_OPEN_LENGTH))
   #print("The CLOSED list is: ", ''.join([str(s)+' ' for s in CLOSED]))
 
-def Astar(initial_state):
+def UCS(initial_state):
   '''Uniform Cost Search. This is the actual algorithm.'''
   global g, COUNT, BACKLINKS, MAX_OPEN_LENGTH, CLOSED, TOTAL_COST
   CLOSED = []
@@ -134,12 +130,9 @@ def Astar(initial_state):
 
 # STEP 1a. Put the start state on a priority queue called OPEN
   OPEN = My_Priority_Queue()
-  hi = h(initial_state)
-
-  # OPEN stores priorities which take into account our heuristic
-  OPEN.insert(initial_state, hi) 
+  OPEN.insert(initial_state, 0)
 # STEP 1b. Assign g=0 to the start state.
-  g[initial_state]=0
+  g[initial_state]=0.0
 
 # STEP 2. If OPEN is empty, output “DONE” and stop.
   while len(OPEN)>0:
@@ -169,25 +162,12 @@ def Astar(initial_state):
     for op in Problem.OPERATORS:
       if op.precond(S):
         new_state = op.state_transf(S)
-        hs = h(new_state)
-        edge_cost = S.edge_distance(new_state)
-        new_g = gs + edge_cost
-        new_f = new_g + hs
-
         if (new_state in CLOSED):
           #print("Already have this state, in CLOSED. del ...")
-
-
-          # we have already added this state to closed, but we found a shorter path
-          # to it. This implies we must re-expand it.
-          if new_f < g[new_state] + hs:
-              g[new_state] = new_g
-              CLOSED.remove(new_state)
-              OPEN.insert(new_state,  new_f)
-              BACKLINKS[new_state] = S
-          else:
-              del new_state
+          del new_state
           continue
+        edge_cost = S.edge_distance(new_state)
+        new_g = gs + edge_cost
 
         # If new_state already exists on OPEN:
         #   If its new priority is less than its old priority,
@@ -197,17 +177,17 @@ def Astar(initial_state):
         if new_state in OPEN:
           #print("new_state is in OPEN already, so...")
           P = OPEN[new_state]
-          if new_f < P:
+          if new_g < P:
             #print("New priority value is lower, so del older one")
             del OPEN[new_state]
-            OPEN.insert(new_state, new_f)
+            OPEN.insert(new_state, new_g)
           else:
             #print("Older one is better, so del new_state")
             del new_state
             continue
         else:
             #print("new_state was not on OPEN at all, so just put it on.")
-            OPEN.insert(new_state, new_f)
+            OPEN.insert(new_state, new_g)
         BACKLINKS[new_state] = S
         g[new_state] = new_g
 
@@ -237,5 +217,5 @@ def report(open, closed, count):
   print("COUNT = "+str(count))
 
 if __name__=='__main__':
-  runAstar()
+  runUCS()
 
