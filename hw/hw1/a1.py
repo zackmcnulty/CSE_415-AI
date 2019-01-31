@@ -1,6 +1,6 @@
 
 def five_x_cubed_plus_1(x):
-    return 5*x**2 + 1
+    return 5*x**3 + 1
 
 def pair_off(l):
     result = [list(x) for x in zip(l[::2], l[1::2])]

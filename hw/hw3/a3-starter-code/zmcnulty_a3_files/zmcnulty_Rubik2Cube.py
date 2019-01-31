@@ -1,13 +1,16 @@
-# IDEA: store the BLOCKS of the rubix cube as my state. Individually, each
-# block keeps track of the colors of each face (when viewed from a specific
-# orientation). Then, simply just move the blocks to different positions in the cube.
-
-
-
-
-
-'''zmcnulty_Rubik2Cube.py
 '''
+Zachary McNulty (zmcnulty, 1636402)
+
+zmcnulty_Rubik2Cube.py
+
+usage:  python3 UCS.py zmcnulty_Rubik2Cube [# moves to shuffle cube]
+
+This is a problem formulation for a 2 X 2 x 2
+Rubik Cube. It is compatible with basic
+UCS.
+
+'''
+
 #<METADATA>
 QUIET_VERSION = '0.2'
 PROBLEM_NAME = 'Rubik Cube'
@@ -266,7 +269,7 @@ except:
   print('python3 UCS.py zmcnulty_Rubik2Cube 25')
 
 
-random.seed(1234) # for reproducibility
+#random.seed(1234) # for reproducibility
 solved_state_list = [0,2,4,    3,0,4,   0,3,1,   2,0,1,   2,5,4,   5,3,4,   3,5,1,   5,2,1]
 solved_state = State(solved_state_list)
 #print(solved_state)

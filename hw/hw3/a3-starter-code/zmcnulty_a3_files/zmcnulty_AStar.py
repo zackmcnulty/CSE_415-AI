@@ -5,6 +5,9 @@
 
  Usage:
  python3 zmcnulty_AStar.py FranceWithCosts
+
+This is a modified version of UCS.py
+
 This implementation does not reconsider a state once it has
 been put on CLOSED list.  If this implementation is extended
 to implement A*, and it is to work with all heuristics,
@@ -143,7 +146,10 @@ def Astar(initial_state):
 
   # OPEN stores priorities which take into account our heuristic
   OPEN.insert(initial_state, hi) 
-# STEP 1b. Assign g=0 to the start state.
+
+# STEP 1b. Assign g=0 to the start state. g does not count
+# our heuristic, but rather the minimum distance to that state
+# so far calculated.
   g[initial_state]=0
 
 # STEP 2. If OPEN is empty, output “DONE” and stop.
@@ -174,8 +180,11 @@ def Astar(initial_state):
     for op in Problem.OPERATORS:
       if op.precond(S):
         new_state = op.state_transf(S)
+        # calculate the heuristic for the new state
         hs = h(new_state)
         edge_cost = S.edge_distance(new_state)
+
+        # calculate the new true distance
         new_g = gs + edge_cost
         new_f = new_g + hs
 
@@ -185,6 +194,8 @@ def Astar(initial_state):
 
           # we have already added this state to closed, but we found a shorter path
           # to it. This implies we must re-expand it.
+
+          # equivalent to asking new_g < g[new_state]
           if new_f < g[new_state] + hs:
               g[new_state] = new_g
               CLOSED.remove(new_state)

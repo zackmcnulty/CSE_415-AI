@@ -1,4 +1,13 @@
+'''
+Zachary McNulty (zmcnulty, 1636402)
 
+This is an extension of zmcnulty_Rubik2Cube.py
+
+It is a problem formula for the 2 x 2 x 2 Rubik Cube and
+defines a heuristic. As such, it is compatible with
+A* Search. In this case, the heuristic defined is to
+count the maximum number of colors on any one face.
+'''
 import time
 from zmcnulty_Rubik2Cube import *
 
@@ -17,4 +26,4 @@ def h(S):
     left.update(state_str[18:20])
     down = set(state_str[20:])
    
-    return max([len(front), len(back), len(right), len(left), len(up), len(down)]) - 1
+    return sum([len(front), len(back), len(right), len(left), len(up), len(down)]) - 6

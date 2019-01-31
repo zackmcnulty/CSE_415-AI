@@ -1,4 +1,19 @@
+'''
+Zachary McNulty (zmcnulty, 1636402)
 
+zmcnulty_EightPuzzleWithManhattan.py
+
+usage: python3 zmcnulty_AStar.py zmcnulty_EightPuzzleWithManhattan.py
+
+This is an extension of EightPuzzle.py 
+It is a problem formulation for the eight slide puzzle which
+includes a heuristic and is thus compatible with
+A* search. Here, the heuristic defined is the Manhattan
+distance: the sum of the number of rows and columns
+each tile is away from its destination.
+
+
+'''
 from EightPuzzle import *
 
 # s is a state within the EightPuzzle Problem

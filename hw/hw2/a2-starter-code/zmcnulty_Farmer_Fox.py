@@ -152,7 +152,7 @@ CREATE_INITIAL_STATE = lambda : State()
 #<\INITIAL_STATE>
 
 #<OPERATORS>
-possible_moves = ["F", "Fc", "Fg", "Ff"]
+possible_moves = ["F", "Ff", "Fc", "Fg"]
 
 OPERATORS = [Operator(
     # string definition

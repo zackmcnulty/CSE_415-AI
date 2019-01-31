@@ -1,11 +1,5 @@
-# Issue is that something is being assigned a depth before the min path to it
-# is found, and then that is erroneously used to find depths of those after it
-
-# use recursive backtracking?
-
-
 ''' IDDFS.py
-by Zachary McNultyJ
+by Zachary McNulty
 Assignment 2, in CSE 415, Winter 2019.
 This file contains the implementation for the Iterative Deepening Depth First Search
 Algorithm. It can search through problem space for the optimal path between some
@@ -55,7 +49,6 @@ def runIDDFS():
 
 def IDDFS(initial_state):
   global COUNT, BACKLINKS, MAX_OPEN_LENGTH, MAX_DEPTH, DEPTHS
-  print(DEPTHS)
 
 # STEP 1. Put all the nodes at the previous MAX_DEPTH on OPEN
 #         i.e. start next search where the previous one left off

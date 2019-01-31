@@ -24,7 +24,17 @@
 
 
 ##### Lect 6: Adversarial Search
+- 2 player zero sum games: minimizing/maximizing players
+- Static Evaluation Functions
+- Minimax Search
 
+##### Lect 7: Adversarial Search II
+- Alpha - Beta Pruning (saving time in minimax search for 2 player zero sum games)
+
+
+##### Lect 8: Adversarial Search III
+- Zobrist Hashing (type of dynamic programming; avoid recomputing values)
+- Machine Learning in Checkers
 
 ### HW topics
 
@@ -37,3 +47,7 @@
 - Breadth First Search
 - Problem Formulation: Defining States and Operators
 
+##### HW3
+- A\* Search vs Uniform Cost Search
+- Heuristics
+- EightPuzzle and Rubik2Cube problems
