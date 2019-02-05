@@ -1,18 +1,19 @@
-'''PlayerSkeleton.py
-A bare-bones agent that plays Toro-Tile Straight,
-but rather poorly.
+'''
+Zachary McNulty (zmcnulty, 1636402)
 
-To create your own agent, make a copy of this file, using
-the naming convention YourUWNetID_TTS_agent.py.
-
-If you need to import additional custom modules, use
-a similar naming convention... e.g.,
-YourUWNetID_TTS_custom_static.py
-
-
+zmcnulty_TTS_agent.py
 '''
 
 from TTS_State import TTS_State
+
+
+# DEFINE GLOBAL VARIABLES
+RIGHT = (1,0)
+UP = (0,1)
+UP_RIGHT = (1,1)
+DOWN_RIGHT = (1,-1)
+
+DIRECTIONS = [RIGHT, UP, UP_RIGHT, DOWN_RIGHT]
 
 USE_CUSTOM_STATIC_EVAL_FUNCTION = False
 
@@ -24,11 +25,27 @@ class MY_TTS_State(TTS_State):
       return self.basic_static_eval()
 
   def basic_static_eval(self):
-    raise Exception("basic_static_eval not yet implemented.")
+    #self.board gives the current board
+    # K is a global variable
+    num_rows = len(self.board)
+    num_cols = len(self.board[0])
+    CW = 0 # count of C(white, 2)
+    CB = 0 # count of C(black, 2)
+    
+    for row in range(num_rows):
+        for col in range(num_cols):
+            for dir in DIRECTIONS:
+               squares = [self.board[(row + i*dir[0]) % num_rows][(col + i*dir[1]) % num_cols] for i in range(K)]
+               if squares.count('W') == 2:
+                    CW += 1
+               if squares.count('B') == 2:
+                    CB += 1
+
+    return CW - CB
+
 
   def custom_static_eval(self):
-    raise Exception("custom_static_eval not yet implemented.")
-
+    raise ValueError("not yet implemented")
 
 def take_turn(current_state, last_utterance, time_limit):
 
@@ -38,6 +55,7 @@ def take_turn(current_state, last_utterance, time_limit):
     # Fix up whose turn it will be.
     who = current_state.whose_turn
     new_who = 'B'  
+
     if who=='B': new_who = 'W'  
     new_state.whose_turn = new_who
     
@@ -62,14 +80,36 @@ def _find_next_vacancy(b):
     return False
 
 def moniker():
-    return "Buddy" # Return your agent's short nickname here.
+    return "Squarepants" # Return your agent's short nickname here.
 
 def who_am_i():
-    return """My name is (WHATEVER YOU DECIDE AS YOUR AGENT's NAME), created by (YOUR NAME).
-(MORE INFO, SUCH AS:) I consider myself to be an aggressive line-blocker."""
+    return '''
+        My name is Spongebob Squarepants. I just wanted to thank zmcnulty
+        for bringing me here today. Let's show the NFL how its done.
+        This one is for Stephen Hillenburg.
 
+            The winner takes all
+            It's the thrill of one more kill
+            The last one to fall
+            Will never sacrifice their will
+            Don't ever look back
+            On the wind closing in
+            The only attack
+            Were their wings on the wind
+            Oh the daydream begins
+            And it's sweet, sweet, sweet victory, yeah!
+            And it's ours for the taking
+            It's ours for the fight
+            In the sweet, sweet, sweet victory, yeah!
+            And the world is last to fall
+
+
+    '''
+# ONLY CALLED ON AT THE BEGINNING OF THE GAME!
 def get_ready(initial_state, k, who_i_play, player2Nickname):
     # do any prep, like eval pre-calculation, here.
+
+    # find where the blocked squares are?
     return "OK"
 
 # The following is a skeleton for the function called parameterized_minimax,
