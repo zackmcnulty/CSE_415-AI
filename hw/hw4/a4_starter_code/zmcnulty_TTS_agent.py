@@ -5,7 +5,7 @@ zmcnulty_TTS_agent.py
 '''
 
 from TTS_State import TTS_State
-
+import time
 
 # DEFINE GLOBAL VARIABLES
 RIGHT = (1,0)
@@ -16,8 +16,26 @@ DOWN_RIGHT = (1,-1)
 DIRECTIONS = [RIGHT, UP, UP_RIGHT, DOWN_RIGHT]
 
 USE_CUSTOM_STATIC_EVAL_FUNCTION = False
+VACANCIES = []
+BLOCKED = []
+BLACK = []
+WHITE = []
+# END GLOBAL VARIABLES
 
-class MY_TTS_State(TTS_State):
+
+class My_TTS_State(TTS_State):
+
+  # surveys board, noting the location of all blocked and vacant tiles
+  # as well as those taken by colored pieces
+  def survey_board(self):
+    global VACANCIES, BLOCKED, BLACK, WHITE
+    for i, row in enumerate(self.board):
+        for j, tile in enumerate(row):
+            if tile == ' ': VACANCIES.append((i,j))
+            elif tile == '-': BLOCKED.append((i,j))
+            elif tile == 'B': BLACK.append((i,j))
+            else: WHITE.append((i,j)) 
+
   def static_eval(self):
     if USE_CUSTOM_STATIC_EVAL_FUNCTION:
       return self.custom_static_eval()
@@ -48,10 +66,16 @@ class MY_TTS_State(TTS_State):
     raise ValueError("not yet implemented")
 
 def take_turn(current_state, last_utterance, time_limit):
+    # so we know how close to our time_limit we are
+    start_time = time.time()
+
+    # use my custom static eval because hopefully its better
+    global USE_CUSTOM_STATIC_EVAL_FUNCTION
+    USE_CUSTOM_STATIC_EVAL_FUNCTION = False # True
 
     # Compute the new state for a move.
     # Start by copying the current state.
-    new_state = MY_TTS_State(current_state.board)
+    new_state = My_TTS_State(current_state.board)
     # Fix up whose turn it will be.
     who = current_state.whose_turn
     new_who = 'B'  
@@ -59,25 +83,31 @@ def take_turn(current_state, last_utterance, time_limit):
     if who=='B': new_who = 'W'  
     new_state.whose_turn = new_who
     
-    # Place a new tile
-    location = _find_next_vacancy(new_state.board)
-    if location==False: return [[False, current_state], "I don't have any moves!"]
-    new_state.board[location[0]][location[1]] = who
+    # Find SOME valid move so we don't get timed out
+    # move is of the form (row, col)
+    while True:
+        spot = VACANCIES[-1]
+        tile = current_state.board[spot[0]][spot[1]]
+        if tile  == ' ':
+            move = spot
+            break
+        else:
+            VACANCIES.pop()
+            if tile == 'B': BLACK.append(spot)
+            else: WHITE.append(spot)
 
-    # Construct a representation of the move that goes from the
-    # currentState to the newState.
-    move = location
+    # Look for a better move using some actual strategy
+
+    # make the move we have decided on
+    new_state.board[move[0]][move[1]] = who
+    VACANCIES.remove(move)
+    if who == 'B': BLACK.append(move)
+    else: WHITE.append(move)
 
     # Make up a new remark
     new_utterance = "I'll think harder in some future game. Here's my move"
 
     return [[move, new_state], new_utterance]
-
-def _find_next_vacancy(b):
-    for i in range(len(b)):
-      for j in range(len(b[0])):
-        if b[i][j]==' ': return (i,j)
-    return False
 
 def moniker():
     return "Squarepants" # Return your agent's short nickname here.
@@ -105,11 +135,23 @@ def who_am_i():
 
 
     '''
+
 # ONLY CALLED ON AT THE BEGINNING OF THE GAME!
 def get_ready(initial_state, k, who_i_play, player2Nickname):
-    # do any prep, like eval pre-calculation, here.
 
-    # find where the blocked squares are?
+    # convert current state object to My_TTS_State
+    initial_state.__class__ = My_TTS_State
+
+    # do any prep, like eval pre-calculation, here.
+    # find blocked and vacant squares?
+
+    # create Zobrist hash table for each state?
+    initial_state.survey_board()
+    
+
+    # find VACANCIES
+    
+
     return "OK"
 
 # The following is a skeleton for the function called parameterized_minimax,
@@ -119,6 +161,8 @@ def get_ready(initial_state, k, who_i_play, player2Nickname):
 # and then it will be able to call tryout using something like this:
 # results = player.parameterized_minimax(**kwargs)
 
+# TODO: implement a more optimal ordering for search rather
+# than the default which is used ALWAYS
 def parameterized_minimax(
        current_state=None,
        use_iterative_deepening_and_time = False,
@@ -133,10 +177,47 @@ def parameterized_minimax(
   current_state_static_val = -1000.0
   n_states_expanded = 0
   n_static_evals_performed = 0
-  max_depth_reached = 0
+  max_depth_reached = 0 #NOTE: for max depth, what are we counting? max depth reached or max layer fully explored
   n_ab_cutoffs = 0
 
-  # STUDENTS: You may create the rest of the body of this function here.
+  # MY CODE!
+
+  # use my custom static eval function if told so
+  global USE_CUSTOM_STATIC_EVAL_FUNCTION
+  USE_CUSTOM_STATIC_EVAL_FUNCTION = use_custom_static_eval_function
+
+  # use my custom TTS state object
+  current_state.__class__ = My_TTS_State
+
+  if use_iterative_deepening_and_time:
+      max_depth = -1
+
+      #NOTE: assume max_play is < actually max depth of the system?
+      while max_depth < max_ply and time.time() - start_time < time_limit:
+
+          # results = [current_state static eval, n_states expanded, n static evals, n ab cutoffs]
+          # returns None if ran out of time
+          max_depth += 1
+          dfs_results = DFS(current_state, max_depth, use_default_move_ordering, alpha_beta, time_limit - (time.time() - start_time))
+        
+          if results != None:
+              current_state_static_val = dfs_results[0]
+              n_states_expanded += dfs_results[1]
+              n_static_evals_performed += dfs_results[2]
+              n_ab_cutoffs += dfs_results[3]
+          
+      max_depth_reached = max_depth - 1 # NOTE: max depth reached or max depth fully explored (i chose latter)?
+  else: 
+      # just run DFS with the max depth starting at the max_play, and an unreasonably high time limt
+      # so that its not an issue.
+      results = DFS(current_state, max_ply, use_default_move_ordering, alpha_beta, 10**10)
+
+      current_state_static_val = dfs_results[0]
+      n_states_expanded += dfs_results[1]
+      n_static_evals_performed += dfs_results[2]
+      n_ab_cutoffs += dfs_results[3]
+      max_depth_reached = max_ply #TODO: is the any reason not to do this?
+
 
   # Prepare to return the results, don't change the order of the results
   results = []
@@ -148,3 +229,5 @@ def parameterized_minimax(
   # Actually return the list of all results...
   return(results)
 
+def DFS(current_state, max_depth, use_default_move_ordering, alpha_beta, time_limit):
+    OPEN = [current_state]
