@@ -73,6 +73,7 @@ class My_TTS_State(TTS_State):
   def get_vacancies(self):
       return self.get_vacancies_default()
 
+
   def static_eval(self):
     if USE_CUSTOM_STATIC_EVAL_FUNCTION:
       return self.custom_static_eval()
@@ -147,25 +148,9 @@ def take_turn(current_state, last_utterance, time_limit):
     if who=='B': new_who = 'W'  
     new_state.whose_turn = new_who
     
-    # Find SOME valid move so we don't get timed out
-    # move is of the form (row, col)
-    # also guarentees that VACANCIES has only OPEN spots
-    while True:
-        spot = VACANCIES[-1]
-        tile = current_state.board[spot[0]][spot[1]]
-        if tile  == ' ':
-            move = spot
-            break
-        else:
-            VACANCIES.pop()
-            if tile == 'B': BLACK.append(spot)
-            else: WHITE.append(spot)
-
     # Look for a better move using some actual strategy
     max_depth = -1
-    max_ply = 10 # put a depth limit
 
-    #NOTE: assume max_ply is < actually max depth of the system?
     while max_depth < max_ply and time.time() - start_time < time_limit:
 
       # results = [current_state static eval, n_states expanded, n static evals, n ab cutoffs]
@@ -273,11 +258,6 @@ def parameterized_minimax(
 
   # MY CODE!
 
-  # give a bit of time for program to finish up so we dont exceed time limit
-  time_buffer = 0.01
-
-  start_time = time.time()
-  time_limit = time_limit - time_buffer
 
   # use my custom static eval function if told so
   global USE_CUSTOM_STATIC_EVAL_FUNCTION
@@ -293,6 +273,11 @@ def parameterized_minimax(
     vacancies = current_state.get_vacancies()
 
   if use_iterative_deepening_and_time:
+      # give a bit of time for program to finish up so we dont exceed time limit
+      time_buffer = 0.01
+      start_time = time.time()
+      time_limit = time_limit - time_buffer
+
       max_depth = -1
 
       #NOTE: assume max_ply is < actually max depth of the system?
@@ -358,12 +343,14 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
     else:
         current_state_static_val = -10**8
 
-    #NOTE: might want to give a few fractions of a second in leeway
-    # results = [current_state static eval, n_states expanded, n static evals, n ab cutoffs]
+
+
+    # if we dont have any time left
     if time.time() - start_time > time_limit: 
         return None
 
-    #NOTE: do we want to count the latter case where the board is full as expanding a state???
+    #NOTE: do we want to count the latter case where the board is full as expanding a state??? NO see piazza
+    # else if we are at the max depth/no moves are left
     elif max_depth == 0 or len(vacancies) == 0:
         static_evals  = 1
         zhash = current_state.zobrist_hash()
@@ -374,6 +361,8 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
             ZOBRIST_HASHES[zhash] = current_state_static_val
 
         return [current_state_static_val, states_expanded, static_evals, num_ab_cutoffs]
+
+    # else expand the state and look more moves ahead 
     else:
         states_expanded = 1
         # for each possible vacancy/move:
@@ -391,8 +380,11 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
                 new_state.whose_turn = 'B'
                 alpha = max(alpha, current_state_static_val)
 
+            # check if we can prune the subtree
             if alpha_beta and beta < alpha:
                 num_ab_cutoffs += 1
+
+            # if we cannot prune the subtree, traverse down it
             else:
                 new_vacancies = [v for v in vacancies if not v == (i,j)]
                 results = DFS(new_state, new_vacancies,  max_depth - 1, use_default_move_ordering, alpha_beta, time_limit - (time.time() - start_time), alpha, beta)
@@ -400,7 +392,8 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
                 if results == None: # we are running out of time!
                     return None
 
-                if who == 'B': # black is minimizer
+                # black is minimizer so they will choose the child with LOWEST static eval
+                if who == 'B': 
                     current_state_static_val = min(current_state_static_val, results[0]) 
                 else: # white is maximizer
                     current_state_static_val = max(current_state_static_val, results[0]) 
@@ -414,12 +407,12 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
 
 
 
-K = 5
+K = 3
 inital_board = \
-            [[' ', ' ', ' ', ' '],
+            [['W', ' ', ' ', ' '],
             [' ', ' ', ' ', ' '],
             ['-', ' ', '-', ' '],
-            [' ', ' ', ' ', ' ']]
+            [' ', ' ', 'B', ' ']]
 
 #inital_board = \
 #        [['W', 'W'],
@@ -434,10 +427,10 @@ USE_CUSTOM_STATIC_EVAL_FUNCTION = False
 print("static_eval: ", init_state.static_eval())
 
 
-start = time.time()
-print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = True, max_ply = 10, alpha_beta=True, time_limit = 1))
-print(time.time() - start)
 #start = time.time()
-#print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = False, max_ply = 5, alpha_beta=True))
+#print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = True, max_ply = 10, alpha_beta=True, time_limit = 1))
 #print(time.time() - start)
+start = time.time()
+print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = False, max_ply = 1, alpha_beta=True))
+print(time.time() - start)
 
