@@ -28,18 +28,11 @@ zobristnum = None
 
 class My_TTS_State(TTS_State):
 
-  def __init__(self, board, whose_turn="W"):
-    super().__init__(board, whose_turn)
-    self.num_rows = len(self.board)
-    self.num_cols = len(self.board[0])
-    global zobristnum
-
-    if zobristnum == None:
-        self.init_zobrist()
-
   def init_zobrist(self):
     global zobristnum
-    num_squares = self.num_cols * self.num_rows
+    num_cols = len(self.board[0])
+    num_rows = len(self.board)
+    num_squares = num_cols * num_rows
     num_states = 4 # black white empty blocked
 
     zobristnum = [[0]*num_states for i in range(num_squares)]
@@ -48,6 +41,12 @@ class My_TTS_State(TTS_State):
             zobristnum[i][j] = randint(0, 4294967296)
 
   def zobrist_hash(self):
+      global zobristnum
+      if zobristnum == None:
+        self.init_zobrist()
+
+      num_cols = len(self.board[0])
+      num_rows = len(self.board)
       val = 0
       for i,row in enumerate(self.board):
           for j,tile in enumerate(row):
@@ -55,8 +54,7 @@ class My_TTS_State(TTS_State):
               elif tile == 'W': piece = 1
               elif tile == 'B': piece = 2
               else: piece = 3#tile == '-'
-
-              val ^= zobristnum[i * self.num_cols + j][piece]
+              val ^= zobristnum[i * num_cols + j][piece]
 
       return val
 
@@ -131,59 +129,49 @@ class My_TTS_State(TTS_State):
     return W_score - B_score
 
 def take_turn(current_state, last_utterance, time_limit):
-    # so we know how close to our time_limit we are
-    start_time = time.time()
 
-    # use my custom static eval because hopefully its better
+    # use my custom static eval function if told so
     global USE_CUSTOM_STATIC_EVAL_FUNCTION
-    USE_CUSTOM_STATIC_EVAL_FUNCTION = False # True
+    USE_CUSTOM_STATIC_EVAL_FUNCTION = True
 
-    # Compute the new state for a move.
-    # Start by copying the current state.
-    new_state = My_TTS_State(current_state.board)
-    # Fix up whose turn it will be.
+    # use my custom TTS state object
+    current_state.__class__ = My_TTS_State
+
+    vacancies = current_state.get_vacancies()
+
     who = current_state.whose_turn
-    new_who = 'B'  
+    new_state = My_TTS_State(current_state.board)
+    if who == 'W': new_state.whose_turn = 'B'
+    else: new_state.whose_turn = 'W'
 
-    if who=='B': new_who = 'W'  
-    new_state.whose_turn = new_who
-    
-    # Look for a better move using some actual strategy
+    # give a bit of time for program to finish up so we dont exceed time limit
+    time_buffer = 0.01
+    start_time = time.time()
+    time_limit = time_limit - time_buffer
+
     max_depth = -1
 
-    while max_depth < max_ply and time.time() - start_time < time_limit:
+    while time.time() - start_time < time_limit:
 
-      # results = [current_state static eval, n_states expanded, n static evals, n ab cutoffs]
-      # returns None if ran out of time
-      max_depth += 1
+        # results = [current_state static eval, n_states expanded, n static evals, n ab cutoffs, best_move]
+        # returns None if ran out of time
+        max_depth += 1
 
-      # begin search at last layer previously explored.
-
-      # make a valid move and assess its state
-      options = {}
-      for spot in VACANCIES:
-        if new_state.board[spot[0]][spot[1]] == ' ':
-            new_state.board[spot[0]][spot[1]] = who
-            options[spot] = parameterized_minimax(new_state) 
-            new_state.board[spot[0]][spot[1]] = ' '
-        else: 
-            VACANCIES.remove(spot)
-
-      move = max(options.keys(), key=(lambda key: options[key]))
-      # have this return best move..
-    
-
+        dfs_results = DFS(current_state, vacancies, max_depth, use_default_move_ordering=False, alpha_beta=True, time_limit=time_limit - (time.time() - start_time))
+      
+        if dfs_results != None:
+                move = dfs_results[4]
+          
 
     # make the move we have decided on
     new_state.board[move[0]][move[1]] = who
-    VACANCIES.remove(move)
-    if who == 'B': BLACK.append(move)
-    else: WHITE.append(move)
 
     # Make up a new remark
     new_utterance = "I'll think harder in some future game. Here's my move"
 
     return [[move, new_state], new_utterance]
+
+
 
 def moniker():
     return "Squarepants" # Return your agent's short nickname here.
@@ -313,6 +301,7 @@ def parameterized_minimax(
       n_static_evals_performed += dfs_results[2]
       n_ab_cutoffs += dfs_results[3]
       max_depth_reached = min(max_ply, len(vacancies)) #TODO: is the any reason not to do this?
+      print(dfs_results[4])
 
 
   # Prepare to return the results, don't change the order of the results
@@ -329,7 +318,7 @@ def parameterized_minimax(
 # who = whose turn it current is
 # initial_open = what states to start on the OPEN list
 # DEPTHS list of depths of each state
-def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_beta, time_limit = 10**8, alpha = -10**8, beta = 10**8):
+def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_beta, time_limit = 10**8, alpha = -10**8, beta = 10**8, last_move = None):
     start_time = time.time()
 
     states_expanded = 0
@@ -360,7 +349,7 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
             current_state_static_val = current_state.static_eval()
             ZOBRIST_HASHES[zhash] = current_state_static_val
 
-        return [current_state_static_val, states_expanded, static_evals, num_ab_cutoffs]
+        return [current_state_static_val, states_expanded, static_evals, num_ab_cutoffs, None]
 
     # else expand the state and look more moves ahead 
     else:
@@ -387,26 +376,35 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
             # if we cannot prune the subtree, traverse down it
             else:
                 new_vacancies = [v for v in vacancies if not v == (i,j)]
-                results = DFS(new_state, new_vacancies,  max_depth - 1, use_default_move_ordering, alpha_beta, time_limit - (time.time() - start_time), alpha, beta)
+                results = DFS(new_state, new_vacancies,  max_depth - 1, use_default_move_ordering, alpha_beta=alpha_beta, time_limit=time_limit - (time.time() - start_time), alpha=alpha, beta=beta, last_move=(i,j))
 
                 if results == None: # we are running out of time!
                     return None
 
                 # black is minimizer so they will choose the child with LOWEST static eval
                 if who == 'B': 
-                    current_state_static_val = min(current_state_static_val, results[0]) 
+                    if results[0] < current_state_static_val:
+                        current_state_static_val = results[0]
+                        best_move = (i,j)
+
                 else: # white is maximizer
-                    current_state_static_val = max(current_state_static_val, results[0]) 
+                    if results[0] > current_state_static_val:
+                        current_state_static_val = results[0]
+                        best_move = (i,j)
                         
                 states_expanded += results[1]
                 static_evals += results[2]
                 num_ab_cutoffs += results[3]
 
 
-    return [current_state_static_val, states_expanded, static_evals, num_ab_cutoffs]
+    return [current_state_static_val, states_expanded, static_evals, num_ab_cutoffs, best_move]
 
 
 
+
+
+# ======================================================== Testing Code
+'''
 K = 3
 inital_board = \
             [['W', ' ', ' ', ' '],
@@ -431,6 +429,6 @@ print("static_eval: ", init_state.static_eval())
 #print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = True, max_ply = 10, alpha_beta=True, time_limit = 1))
 #print(time.time() - start)
 start = time.time()
-print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = False, max_ply = 1, alpha_beta=True))
+print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = False, max_ply =2, alpha_beta=False))
 print(time.time() - start)
-
+'''
