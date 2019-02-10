@@ -7,6 +7,7 @@ zmcnulty_TTS_agent.py
 from TTS_State import TTS_State
 import time
 from random import randint
+from random import shuffle
 
 # DEFINE GLOBAL VARIABLES
 RIGHT = (1,0)
@@ -17,7 +18,6 @@ DOWN_RIGHT = (1,-1)
 DIRECTIONS = [RIGHT, UP, UP_RIGHT, DOWN_RIGHT]
 
 USE_CUSTOM_STATIC_EVAL_FUNCTION = False
-VACANCIES = []
 K = 1 # default; will be overwritten
 
 ZOBRIST_HASHES = {}
@@ -67,9 +67,26 @@ class My_TTS_State(TTS_State):
 
       return vacancies
 
-  # TODO: change to optimize?
+  # consider populated areas first!
+  # sort the vacancies by the number of neighbors either B or W descending
   def get_vacancies(self):
-      return self.get_vacancies_default()
+     num_cols = len(self.board[0])
+     num_rows = len(self.board)
+     vacancies = self.get_vacancies_default()
+     adjacents = {v:0 for v in vacancies}
+
+     for spot in vacancies:
+         count = 0
+         for dir in [(1,0), (1,1), (0,1), (-1,0), (0,-1), (-1,-1), (1,-1), (-1,1)]:
+             if self.board[(spot[0] + dir[0]) % num_rows][(spot[1] + dir[1]) % num_cols] in ['W', 'B']:
+                 count +=1
+         
+         adjacents[spot] = count
+
+     return sorted(vacancies, reverse=True, key = lambda v: adjacents[v])
+            
+
+    
 
 
   def static_eval(self):
@@ -92,9 +109,12 @@ class My_TTS_State(TTS_State):
         for j, col in enumerate(row):
             for dir in DIRECTIONS:
                squares = [self.board[(i + k*dir[0]) % num_rows][(j + k*dir[1]) % num_cols] for k in range(K)]
-               if squares.count('W') == 2:
+               count_W = squares.count('W')
+               count_B = squares.count('B')
+               count_forbid = squares.count('-')
+               if count_W == 2 and count_B == 0 and count_forbid == 0:
                     CW += 1
-               if squares.count('B') == 2:
+               if count_B == 2 and count_W == 0 and count_forbid == 0:
                     CB += 1
 
     return CW - CB
@@ -199,7 +219,6 @@ def who_am_i():
 
 
     '''
-
 # ONLY CALLED ON AT THE BEGINNING OF THE GAME!
 def get_ready(initial_state, k, who_i_play, player2Nickname):
 
@@ -212,7 +231,6 @@ def get_ready(initial_state, k, who_i_play, player2Nickname):
     # find blocked and vacant squares?
 
     # create Zobrist hash table for each state?
-
 
     # find VACANCIES, sorted in order of relevance
     VACANCIES = initial_state.get_vacancies()
@@ -289,6 +307,7 @@ def parameterized_minimax(
               n_states_expanded += dfs_results[1]
               n_static_evals_performed += dfs_results[2]
               n_ab_cutoffs += dfs_results[3]
+              
           
       max_depth_reached = max_depth - 1 # NOTE: max depth reached or max depth fully explored (i chose latter)?
   else: 
@@ -300,8 +319,8 @@ def parameterized_minimax(
       n_states_expanded += dfs_results[1]
       n_static_evals_performed += dfs_results[2]
       n_ab_cutoffs += dfs_results[3]
-      max_depth_reached = min(max_ply, len(vacancies)) #TODO: is the any reason not to do this?
       print(dfs_results[4])
+      max_depth_reached = min(max_ply, len(vacancies)) #TODO: is the any reason not to do this?
 
 
   # Prepare to return the results, don't change the order of the results
@@ -404,7 +423,6 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
 
 
 # ======================================================== Testing Code
-'''
 K = 3
 inital_board = \
             [['W', ' ', ' ', ' '],
@@ -429,6 +447,5 @@ print("static_eval: ", init_state.static_eval())
 #print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = True, max_ply = 10, alpha_beta=True, time_limit = 1))
 #print(time.time() - start)
 start = time.time()
-print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = False, max_ply =2, alpha_beta=False))
+print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = False, max_ply = 4, alpha_beta=False, use_custom_static_eval_function = False, use_default_move_ordering=True))
 print(time.time() - start)
-'''
