@@ -124,7 +124,7 @@ class My_TTS_State(TTS_State):
     global K
     W_score = 0
     B_score = 0
-    base = 3
+    base = 10
    
     num_rows = len(self.board)
     for i, row in enumerate(self.board):
@@ -159,11 +159,15 @@ def take_turn(current_state, last_utterance, time_limit):
     # use my custom static eval function if told so
     global USE_CUSTOM_STATIC_EVAL_FUNCTION
     USE_CUSTOM_STATIC_EVAL_FUNCTION = True
+    default_ordering = False
 
     # use my custom TTS state object
     current_state.__class__ = My_TTS_State
 
-    vacancies = current_state.get_vacancies()
+    if default_ordering:
+        vacancies = current_state.get_vacancies_default()
+    else:
+        vacancies = current_state.get_vacancies()
    
     # no possible moves
     if len(vacancies) == 0:
@@ -187,19 +191,46 @@ def take_turn(current_state, last_utterance, time_limit):
         # returns None if ran out of time
         max_depth += 1
 
-        dfs_results = DFS(current_state, vacancies, max_depth, use_default_move_ordering=False, alpha_beta=True, time_limit=time_limit - (time.time() - start_time))
+        dfs_results = DFS(current_state, vacancies, max_depth, use_default_move_ordering=default_ordering, alpha_beta=True, time_limit=time_limit - (time.time() - start_time))
       
         if dfs_results != None:
                 move = dfs_results[4]
+                last_results = dfs_results
           
 
     # make the move we have decided on
     new_state.board[move[0]][move[1]] = who
 
     # Make up a new remark
-    new_utterance = "I'll think harder in some future game. Here's my move"
-
+    new_utterance = make_utterance(new_state, last_results, last_utterance)
     return [[move, new_state], new_utterance]
+
+
+# says something clever I guess
+# makes comments about the current state of the game.
+def make_utterance(current_state, last_results, last_utterance):
+    vac_count= len(current_state.get_vacancies())
+    static_val = current_state.static_eval()
+    spaces = len(current_state.board) * len(current_state.board[0])
+
+    if "lose" in last_utterance:
+        return "don't say that. It is not over until its over"
+    elif vac_count < 5:
+        return "Oh we are in the endgame now... Only " + str(vac_count) + " moves left..."
+    elif vac_count / spaces > 0.8:
+        return "This game has barely just begun. There are still " + str(3**vac_count) + "games that could be played, roughly"
+    elif static_val < 0.8*last_results[0]:
+        return "At first I thought I was in a good place, but now I am not so sure. I don't like what I see a few moves ahead."
+    elif last_results[0] < -200:
+        return "This is not looking good for me. You're ahead on points, " + str(-1*last_results[0]) + " points according to my calculations."
+    elif last_results[0] > 200:
+        return "I make this game look easy! According to my calculations, I am " + str(last_results[0]) + " points ahead!"
+    else:
+        rhymes = {'0':"zero is my hero", '1':"one is so much fun", '2':"oh two boo hoo", '3':"three is good for me", '4':"four is more", '5':"five is alive", '6':"six just don't mix", '7':"seven is heaven", '8':"eight is fate", '9':"nine is just fine"}
+        left = ", ".join([rhymes[digit] for digit in str(last_results[4][0])])
+        right = ", ".join([rhymes[digit] for digit in str(last_results[4][1])])
+        return left + " but " + right
+
 
 
 
@@ -233,7 +264,6 @@ def who_am_i():
 def get_ready(initial_state, k, who_i_play, player2Nickname):
 
     # convert current state object to My_TTS_State
-    initial_state.__class__ = My_TTS_State
     global K
     K = k
 
@@ -242,8 +272,6 @@ def get_ready(initial_state, k, who_i_play, player2Nickname):
 
     # create Zobrist hash table for each state?
 
-    # find VACANCIES, sorted in order of relevance
-    VACANCIES = initial_state.get_vacancies()
     return "OK"
 
 # The following is a skeleton for the function called parameterized_minimax,
@@ -343,10 +371,6 @@ def parameterized_minimax(
   # Actually return the list of all results...
   return(results)
 
-# NOTE: See HW2 IDDFS.py for an example of how this was implemented; I reused most of my ideas from there
-# who = whose turn it current is
-# initial_open = what states to start on the OPEN list
-# DEPTHS list of depths of each state
 def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_beta, time_limit = 10**8, alpha = -10**8, beta = 10**8):
     start_time = time.time()
 
@@ -401,11 +425,13 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
                 alpha = max(alpha, current_state_static_val)
 
             # check if we can prune the subtree
-            if alpha_beta and beta < alpha:
-                #num_ab_cutoffs += 1
+            if alpha_beta and beta <= alpha:
+                num_ab_cutoffs += 1
 
-                # NOTE: do I want to cut it each time?
-                num_ab_cutoffs += len(vacancies) - n - 1
+                # NOTE: do I want to count the number of times I realize a cut can be made, or the number
+                # of subtrees that are cut off. In this case, the two our different because each node
+                # often has many more than two children
+                #num_ab_cutoffs += len(vacancies) - n 
                 break
 
             # if we cannot prune the subtree, traverse down it
@@ -439,22 +465,18 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
 
 
 # ======================================================== Testing Code
+
+
+'''
 K = 3
 inital_board = \
-            [['W', ' ', ' ', ' '],
-            [' ', ' ', ' ', ' '],
-            ['-', ' ', '-', ' '],
-            [' ', ' ', 'B', ' ']]
-
-#inital_board = \
-#        [['W', 'W'],
-#          [' ', ' '],
-#          [' ', ' '],
-#          [' ', ' ']]
+            [['W', '-', '-', '-'],
+            ['-', '-', '-', '-'],
+            ['-', '-', '-', '-'],
+            [' ', '-', 'B', '-']]
 
 init_state = My_TTS_State(inital_board)
-init_state.whose_turn = 'W'
-USE_CUSTOM_STATIC_EVAL_FUNCTION = False
+init_state.whose_turn = 'B'
 
 #print("static_eval: ", init_state.static_eval())
 
@@ -466,7 +488,8 @@ start = time.time()
 print("eval, expand, eval count, max depth, ab cuts:", \
         parameterized_minimax(init_state, 
             use_iterative_deepening_and_time = False, 
-            max_ply = 2, 
+            max_ply = 10, 
             alpha_beta=True,
             use_custom_static_eval_function =False , use_default_move_ordering=True))
 print(time.time() - start)
+'''
