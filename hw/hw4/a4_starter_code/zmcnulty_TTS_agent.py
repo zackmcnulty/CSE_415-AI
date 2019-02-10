@@ -139,8 +139,14 @@ class My_TTS_State(TTS_State):
 
             for dir in DIRECTIONS:
                squares = [self.board[(i + k*dir[0]) % num_rows][(j + k*dir[1]) % num_cols] for k in range(K)]
-               CW[squares.count('W')] += 1
-               CB[squares.count('B')] += 1
+               count_B = squares.count('B')
+               count_W = squares.count('W')
+               count_forbid = squares.count('-')
+               if count_forbid == 0:
+                   if count_B == 0:
+                       CW[squares.count('W')] += 1
+                   elif count_W == 0:
+                       CB[squares.count('B')] += 1
 
             W_score += sum([s*base**i for i,s in enumerate(CW)])
             B_score += sum([s*base**i for i,s in enumerate(CB)])
@@ -158,6 +164,10 @@ def take_turn(current_state, last_utterance, time_limit):
     current_state.__class__ = My_TTS_State
 
     vacancies = current_state.get_vacancies()
+   
+    # no possible moves
+    if len(vacancies) == 0:
+        return [[False, current_state], "The game has ended"]
 
     who = current_state.whose_turn
     new_state = My_TTS_State(current_state.board)
@@ -337,14 +347,14 @@ def parameterized_minimax(
 # who = whose turn it current is
 # initial_open = what states to start on the OPEN list
 # DEPTHS list of depths of each state
-def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_beta, time_limit = 10**8, alpha = -10**8, beta = 10**8, last_move = None):
+def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_beta, time_limit = 10**8, alpha = -10**8, beta = 10**8):
     start_time = time.time()
 
     states_expanded = 0
     static_evals = 0
     num_ab_cutoffs = 0
 
-   # check whose turn it is
+   # check whose turn it is; set the initial value v of the given state
     who = current_state.whose_turn
     if who == 'B':
         current_state_static_val = 10**8
@@ -358,9 +368,10 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
         return None
 
     #NOTE: do we want to count the latter case where the board is full as expanding a state??? NO see piazza
-    # else if we are at the max depth/no moves are left
+    # else if we are at the max depth/no moves are left calculate the static evaluation function
+    # check if it is a state we already calculated in ZOBRIST_HASHES
     elif max_depth == 0 or len(vacancies) == 0:
-        static_evals  = 1
+        static_evals = 1
         zhash = current_state.zobrist_hash()
         if zhash in ZOBRIST_HASHES:
             current_state_static_val = ZOBRIST_HASHES[zhash]
@@ -372,15 +383,16 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
 
     # else expand the state and look more moves ahead 
     else:
-        states_expanded = 1
+        states_expanded += 1
         # for each possible vacancy/move:
         #   make a new board after making that move
         #   swap whose turn it is
         #   Run DFS on the new board.
-        for (i,j) in vacancies:
+        for n, (i,j) in enumerate(vacancies):
             new_state = My_TTS_State(current_state.board)
             new_state.board[i][j] = who
 
+            # calculate the alpha beta values for a given node
             if who == 'B':
                 new_state.whose_turn = 'W'
                 beta = min(beta, current_state_static_val)
@@ -390,12 +402,16 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
 
             # check if we can prune the subtree
             if alpha_beta and beta < alpha:
-                num_ab_cutoffs += 1
+                #num_ab_cutoffs += 1
+
+                # NOTE: do I want to cut it each time?
+                num_ab_cutoffs += len(vacancies) - n - 1
+                break
 
             # if we cannot prune the subtree, traverse down it
             else:
                 new_vacancies = [v for v in vacancies if not v == (i,j)]
-                results = DFS(new_state, new_vacancies,  max_depth - 1, use_default_move_ordering, alpha_beta=alpha_beta, time_limit=time_limit - (time.time() - start_time), alpha=alpha, beta=beta, last_move=(i,j))
+                results = DFS(new_state, new_vacancies,  max_depth - 1, use_default_move_ordering, alpha_beta=alpha_beta, time_limit=time_limit - (time.time() - start_time), alpha=alpha, beta=beta)
 
                 if results == None: # we are running out of time!
                     return None
@@ -440,12 +456,17 @@ init_state = My_TTS_State(inital_board)
 init_state.whose_turn = 'W'
 USE_CUSTOM_STATIC_EVAL_FUNCTION = False
 
-print("static_eval: ", init_state.static_eval())
+#print("static_eval: ", init_state.static_eval())
 
 
 #start = time.time()
 #print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = True, max_ply = 10, alpha_beta=True, time_limit = 1))
 #print(time.time() - start)
 start = time.time()
-print("[current_state_static_val, n_states_expanded, static evals, max_depth, num_ab cutoffs ]:", parameterized_minimax(init_state, use_iterative_deepening_and_time = False, max_ply = 4, alpha_beta=False, use_custom_static_eval_function = False, use_default_move_ordering=True))
+print("eval, expand, eval count, max depth, ab cuts:", \
+        parameterized_minimax(init_state, 
+            use_iterative_deepening_and_time = False, 
+            max_ply = 2, 
+            alpha_beta=True,
+            use_custom_static_eval_function =False , use_default_move_ordering=True))
 print(time.time() - start)
