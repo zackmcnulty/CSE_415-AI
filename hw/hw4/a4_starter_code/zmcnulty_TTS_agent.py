@@ -17,11 +17,14 @@ DOWN_RIGHT = (1,-1)
 
 DIRECTIONS = [RIGHT, UP, UP_RIGHT, DOWN_RIGHT]
 
-USE_CUSTOM_STATIC_EVAL_FUNCTION = False
+USE_CUSTOM_STATIC_EVAL_FUNCTION = True
+USE_DEFAULT_ORDERING = False
 K = 1 # default; will be overwritten
 
 ZOBRIST_HASHES = {}
 zobristnum = None
+
+VACANCIES = []
 
 # END GLOBAL VARIABLES
 
@@ -144,12 +147,12 @@ class My_TTS_State(TTS_State):
                count_forbid = squares.count('-')
                if count_forbid == 0:
                    if count_B == 0:
-                       CW[squares.count('W')] += 1
+                       CW[count_W] += 1
                    elif count_W == 0:
-                       CB[squares.count('B')] += 1
+                       CB[count_B] += 1
 
-            W_score += sum([s*base**i for i,s in enumerate(CW)])
-            B_score += sum([s*base**i for i,s in enumerate(CB)])
+            W_score += sum([s*base**i for i,s in enumerate(CW)])**2
+            B_score += sum([s*base**i for i,s in enumerate(CB)])**2
 
 
     return W_score - B_score
@@ -157,20 +160,21 @@ class My_TTS_State(TTS_State):
 def take_turn(current_state, last_utterance, time_limit):
 
     # use my custom static eval function if told so
-    global USE_CUSTOM_STATIC_EVAL_FUNCTION
-    USE_CUSTOM_STATIC_EVAL_FUNCTION = True
-    default_ordering = False
+    global USE_CUSTOM_STATIC_EVAL_FUNCTION, USE_DEFAULT_ORDERING, VACANCIES
 
     # use my custom TTS state object
     current_state.__class__ = My_TTS_State
 
-    if default_ordering:
-        vacancies = current_state.get_vacancies_default()
-    else:
-        vacancies = current_state.get_vacancies()
+    new_vacancies = []
+    for spot in VACANCIES:
+        if current_state.board[spot[0]][spot[1]] == ' ':
+            new_vacancies.append(spot)
+
+    VACANCIES = new_vacancies
+
    
     # no possible moves
-    if len(vacancies) == 0:
+    if len(VACANCIES) == 0:
         return [[False, current_state], "The game has ended"]
 
     who = current_state.whose_turn
@@ -191,7 +195,7 @@ def take_turn(current_state, last_utterance, time_limit):
         # returns None if ran out of time
         max_depth += 1
 
-        dfs_results = DFS(current_state, vacancies, max_depth, use_default_move_ordering=default_ordering, alpha_beta=True, time_limit=time_limit - (time.time() - start_time))
+        dfs_results = DFS(current_state, VACANCIES, max_depth, use_default_move_ordering=USE_DEFAULT_ORDERING, alpha_beta=True, time_limit=time_limit - (time.time() - start_time))
       
         if dfs_results != None:
                 move = dfs_results[4]
@@ -219,11 +223,11 @@ def make_utterance(current_state, last_results, last_utterance):
         return "Oh we are in the endgame now... Only " + str(vac_count) + " moves left..."
     elif vac_count / spaces > 0.8:
         return "This game has barely just begun. There are still " + str(3**vac_count) + "games that could be played, roughly"
-    elif static_val < 0.8*last_results[0]:
+    elif (static_val < 0.8*last_results[0] and current_state.whose_turn == 'B') or (static_val > 0.8*last_results[0] and current_state.whose_turn == 'W'):
         return "At first I thought I was in a good place, but now I am not so sure. I don't like what I see a few moves ahead."
-    elif last_results[0] < -200:
+    elif (last_results[0] < -200 and current_state.whose_turn == 'B') or (last_results[0] > 200 and current_state.whose_turn == 'W'):
         return "This is not looking good for me. You're ahead on points, " + str(-1*last_results[0]) + " points according to my calculations."
-    elif last_results[0] > 200:
+    elif (last_results[0] > 200 and current_state.whose_turn == 'B') or (last_results[0] < -200 and current_state.whose_turn == 'W'):
         return "I make this game look easy! According to my calculations, I am " + str(last_results[0]) + " points ahead!"
     else:
         rhymes = {'0':"zero is my hero", '1':"one is so much fun", '2':"oh two boo hoo", '3':"three is good for me", '4':"four is more", '5':"five is alive", '6':"six just don't mix", '7':"seven is heaven", '8':"eight is fate", '9':"nine is just fine"}
@@ -264,11 +268,16 @@ def who_am_i():
 def get_ready(initial_state, k, who_i_play, player2Nickname):
 
     # convert current state object to My_TTS_State
-    global K
+    global K, VACANCIES
     K = k
 
+    initial_state.__class__ = My_TTS_State
     # do any prep, like eval pre-calculation, here.
     # find blocked and vacant squares?
+    if USE_DEFAULT_ORDERING:
+        VACANCIES = initial_state.get_vacancies_default()
+    else:
+        VACANCIES = initial_state.get_vacancies()
 
     # create Zobrist hash table for each state?
 
@@ -407,6 +416,7 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
 
     # else expand the state and look more moves ahead 
     else:
+        best_move = None
         states_expanded += 1
         # for each possible vacancy/move:
         #   make a new board after making that move
@@ -458,7 +468,7 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
                 num_ab_cutoffs += results[3]
 
 
-    return [current_state_static_val, states_expanded, static_evals, num_ab_cutoffs, best_move]
+        return [current_state_static_val, states_expanded, static_evals, num_ab_cutoffs, best_move]
 
 
 
