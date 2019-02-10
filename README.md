@@ -1,4 +1,4 @@
-# CSE_415
+#CSE_415
 
 ### Lecture Topics
 
@@ -15,6 +15,7 @@
 - Iterative Deepening Depth First Search
 
 ##### Lect 4: Problem Formulation
+- Problem Formulation
 
 
 ##### Lect 5: Heuristic Search
@@ -25,16 +26,30 @@
 
 ##### Lect 6: Adversarial Search
 - 2 player zero sum games: minimizing/maximizing players
-- Static Evaluation Functions
-- Minimax Search
+- Static Evaluation Functions: assigning values to different states
+- Minimax Search: assumes opponent plays rationally
 
 ##### Lect 7: Adversarial Search II
-- Alpha - Beta Pruning (saving time in minimax search for 2 player zero sum games)
+- Alpha-Beta Pruning (saving time in minimax search for 2 player zero sum games)
+	- Don't look down paths that are clearly not going to be optimal
 
 
 ##### Lect 8: Adversarial Search III
 - Zobrist Hashing (type of dynamic programming; avoid recomputing values)
+- Efficiently keep track of the state evaluations of previous states
 - Machine Learning in Checkers
+
+##### Lect 9: Expectimax Search
+- Expectimax Search (uncertain outcomes; introduce irrationality)
+- Make move based on EXPECTED values vs optimal values of states.
+
+##### Lect 10: Uncertainty (Probability)
+- Probablistic Reasoning: Bayes rule, odds
+- Monty Hall Problem
+
+##### Lect 11: Markov Decision Processes
+- Introducing randomness (Stochastic modeling)
+- 
 
 ### HW topics
 
@@ -51,3 +66,8 @@
 - A\* Search vs Uniform Cost Search
 - Heuristics
 - EightPuzzle and Rubik2Cube problems
+
+##### HW4
+- Toro-tile game player
+- Minimax search with Alpha beta pruning
+- Zobrist Hashing
