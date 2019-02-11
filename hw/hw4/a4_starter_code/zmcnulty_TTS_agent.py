@@ -19,7 +19,7 @@ DIRECTIONS = [RIGHT, UP, UP_RIGHT, DOWN_RIGHT]
 
 USE_CUSTOM_STATIC_EVAL_FUNCTION = True
 USE_DEFAULT_ORDERING = False
-K = 1 # default; will be overwritten
+K = None # will be overwritten
 
 ZOBRIST_HASHES = {}
 zobristnum = None
@@ -127,7 +127,7 @@ class My_TTS_State(TTS_State):
     global K
     W_score = 0
     B_score = 0
-    base = 10
+    base = 5
    
     num_rows = len(self.board)
     for i, row in enumerate(self.board):
@@ -153,6 +153,10 @@ class My_TTS_State(TTS_State):
 
             W_score += sum([s*base**i for i,s in enumerate(CW)])**2
             B_score += sum([s*base**i for i,s in enumerate(CB)])**2
+            if CW[-1] != 0:
+                W_score += 10**7
+            if CB[-1] != 0:
+                B_score += 10**7
 
 
     return W_score - B_score
@@ -161,6 +165,8 @@ def take_turn(current_state, last_utterance, time_limit):
 
     # use my custom static eval function if told so
     global USE_CUSTOM_STATIC_EVAL_FUNCTION, USE_DEFAULT_ORDERING, VACANCIES
+    USE_CUSTOM_STATIC_EVAL_FUNCTION = True
+    USE_DEFAULT_ORDERING = False
 
     # use my custom TTS state object
     current_state.__class__ = My_TTS_State
@@ -226,9 +232,9 @@ def make_utterance(current_state, last_results, last_utterance):
     elif (static_val < 0.8*last_results[0] and current_state.whose_turn == 'B') or (static_val > 0.8*last_results[0] and current_state.whose_turn == 'W'):
         return "At first I thought I was in a good place, but now I am not so sure. I don't like what I see a few moves ahead."
     elif (last_results[0] < -200 and current_state.whose_turn == 'B') or (last_results[0] > 200 and current_state.whose_turn == 'W'):
-        return "This is not looking good for me. You're ahead on points, " + str(-1*last_results[0]) + " points according to my calculations."
+        return "This is not looking good for me. You're ahead on points, " + str(abs(last_results[0])) + " points according to my calculations."
     elif (last_results[0] > 200 and current_state.whose_turn == 'B') or (last_results[0] < -200 and current_state.whose_turn == 'W'):
-        return "I make this game look easy! According to my calculations, I am " + str(last_results[0]) + " points ahead!"
+        return "I make this game look easy! According to my calculations, I am " + str(abs(last_results[0])) + " points ahead!"
     else:
         rhymes = {'0':"zero is my hero", '1':"one is so much fun", '2':"oh two boo hoo", '3':"three is good for me", '4':"four is more", '5':"five is alive", '6':"six just don't mix", '7':"seven is heaven", '8':"eight is fate", '9':"nine is just fine"}
         left = ", ".join([rhymes[digit] for digit in str(last_results[4][0])])

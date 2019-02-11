@@ -27,7 +27,6 @@ K = 4
 class TTS_State:
     def __init__(self, board, whose_turn=WHITE):
         new_board = [r[:] for r in board]  # Deeply copy the board.
-        #print("new_board is " + str(new_board))
         self.board = new_board
         self.whose_turn = whose_turn;
 
