@@ -1,15 +1,16 @@
-'''YourUWNetID_VI.py
-(rename this file using your own UWNetID.)
+'''zmcnulty_VI.py
 
 Value Iteration for Markov Decision Processes.
 '''
 
 # Edit the returned name to ensure you get credit for the assignment.
 def student_name():
-   return "Your Lastname, Firstname" # For an autograder.
+   return "McNulty, Zachary" # For an autograder.
 
+# GLOBAL VARIABLES!
 Vkplus1 = {}
 Q_Values_Dict = {}
+Policy = {}
 
 def one_step_of_VI(S, A, T, R, gamma, Vk):
    '''S is list of all the states defined for this MDP.
@@ -33,9 +34,23 @@ def one_step_of_VI(S, A, T, R, gamma, Vk):
 
    global Q_Values_Dict, Vkplus1
    
-   delta_max = 0
-   for key in Vk:
-        delta_max = max(abs(Vk[key] - Vkplus1[key]))
+   # if our dictionary is not defined
+   if not Q_Values_Dict:
+       Q_Values_Dict = return_Q_values(S,A)
+
+   # NOTE: Necessary or not?
+   if not Vk:
+       for s in S: Vk[s] = 0
+   
+   for s in S:
+       for a in A:
+           result =  sum([T(s,a, sprime) * (R(s,a,sprime) + gamma * Vk[sprime]) for sprime in S])
+           Q_Values_Dict[(s,a)] =  sum([T(s,a, sprime) * (R(s,a,sprime) + gamma * Vk[sprime]) for sprime in S])
+
+       Vkplus1[s] = max( [Q_Values_Dict[(s,a)] for a in A])
+
+
+   delta_max = max([abs(Vk[key] - Vkplus1[key]) for key in Vk])
 
    return (Vkplus1, delta_max)
 
@@ -47,6 +62,8 @@ def return_Q_values(S, A):
    However, if no such call has been made yet, use S and A to
    create the answer dictionary, and use 0.0 for all the values.
    '''
+   global Q_Values_Dict
+
    # evaluates to False if empty
    if not Q_Values_Dict:
        #NOTE: Do I have to worry if an action is applicable at a given state?
@@ -54,7 +71,6 @@ def return_Q_values(S, A):
 
    return Q_Values_Dict # placeholder
 
-Policy = {}
 def extract_policy(S, A):
    '''Return a dictionary mapping states to actions. Obtain the policy
    using the q-values most recently computed.  If none have yet been
@@ -65,11 +81,17 @@ def extract_policy(S, A):
    global Policy
    Policy = {}
    # Add code here
+
+   Q_Values_Dict = return_Q_values(S,A) 
+
+   for s in S:
+       Policy[s] = max([a for a in A], key=lambda a: Q_Values_Dict[(s,a)])
+   
    return Policy
 
 def apply_policy(s):
    '''Return the action that your current best policy implies for state s.'''
    global Policy
-   return None # placeholder
+   return Policy[s]
 
 
