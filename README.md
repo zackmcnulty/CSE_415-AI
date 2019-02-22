@@ -49,7 +49,18 @@
 
 ##### Lect 11: Markov Decision Processes
 - Introducing randomness (Stochastic modeling)
+
+##### Lect 12: Markov Decision Processes 2
+- Quasi-States
+- Discounting
+- Optimal Policies
+- Handling Infinite Utilities (games that do not end)
+- Value Iteration - Bellman Equations
+
+##### Lect 13: Q-learning (Reinforcement Learning)
+- Q-value updates
 - 
+
 
 ### HW topics
 
@@ -71,3 +82,7 @@
 - Toro-tile game player
 - Minimax search with Alpha beta pruning
 - Zobrist Hashing
+
+##### HW5
+- Value Iteration - Towers of Hanoi agent
+- Q-learning
