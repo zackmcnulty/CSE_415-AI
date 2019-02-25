@@ -1,4 +1,4 @@
-'''YourUWNetID_Q_Learn.py
+'''zmcnulty_Q_Learn.py
 
 Rename this file using your own UWNetID, and rename it where it is imported
 in TOH_MDP.py 
@@ -10,10 +10,11 @@ This is part of the UW Intro to AI Starter Code for Reinforcement Learning.
 
 '''
 
+import numpy as np
+
 # Edit the returned name to ensure you get credit for the assignment.
 def student_name():
-#*** ADD OR CHANGE CODE HERE ***
-   return "Your Lastname, Firstname" # For an autograder.
+   return "McNulty, Zachary" # For an autograder.
 
 STATES=None; ACTIONS=None; UQV_callback=None; Q_VALUES=None
 is_valid_goal_state=None; Terminal_state = None
@@ -35,6 +36,7 @@ def setup(states, actions, q_vals_dict, update_q_value_callback,\
     is_valid_goal_state = goal_test
     Terminal_state = terminal
     USE_EXPLORATION_FUNCTION = use_exp_fn
+
     if USE_EXPLORATION_FUNCTION:
 #*** ADD OR CHANGE CODE HERE ***
          # Change this if you implement an exploration function:
@@ -73,19 +75,22 @@ def update_Q_value(previous_state, previous_action, new_value):
     Do not change this function.'''
     UQV_callback(previous_state, previous_action, new_value)
 
+# NOTE: Have to use the "Show Q values" option for the update to be shown
 def handle_transition(action, new_state, r):
     '''When the user drives the agent, the system will call this function,
     so that you can handle the learning that should take place on this
     transition.'''
-    global PREVIOUS_STATE
+    global PREVIOUS_STATE, ALPHA, GAMMA, Q_VALUES
 
 #*** ADD OR CHANGE CODE HERE ***
     
+    new_value = (1 - ALPHA)*Q_VALUES[(PREVIOUS_STATE, action)] + ALPHA * (r + GAMMA * max([Q_VALUES[(new_state, a_prime)] for a_prime in ACTIONS]))
+
+    Q_VALUES[(PREVIOUS_STATE, action)] = new_value
+
     # You should call update_Q_value before returning.  E.g.,
-    update_Q_value(PREVIOUS_STATE, action, -99)
+    update_Q_value(PREVIOUS_STATE, action, new_value)
     
-    print("Transition to state: "+str(new_state)+\
-          "\n with reward "+str(r)+" is currently not handled by your program.")
     PREVIOUS_STATE = new_state
     return # Nothing needs to be returned.
 
@@ -101,24 +106,24 @@ def choose_next_action(s, r, terminated=False):
      Then the agent needs to choose its action and return that.
 
      '''
-     global INITIAL_STATE, PREVIOUS_STATE, LAST_ACTION
+     global INITIAL_STATE, PREVIOUS_STATE, LAST_ACTION, Q_VALUES
+     global EPSILON, ALPHA
      # Unless s is the initial state, compute a new q-value for the
      # previous state and action.
      if not (s==INITIAL_STATE):
          # Compute your update here.
          # if CUSTOM_ALPHA is True, manage the alpha values over time.
          # Otherwise go with the fixed value.
-         new_qval = -99 # A bogus value for now.
 #*** ADD OR CHANGE CODE HERE ***
-         
-         # Save it in the dictionary of Q_VALUES:
-         Q_VALUES[(PREVIOUS_STATE, LAST_ACTION)] = new_qval
 
-         # Then let the Engine and GUI know about the new Q-value.
-         update_Q_value(PREVIOUS_STATE, LAST_ACTION, new_qval)
+         if CUSTOM_ALPHA:
+             ALPHA = max(0.5, 1 - len([q for q in Q_VALUES if Q_VALUES[q] == 0]) / len(Q_VALUES))
+         
+         handle_transition(LAST_ACTION, s, r)
          
      # Now select an action according to your Q-Learning criteria, such
      # as expected discounted future reward vs exploration.
+     if terminated: return None
 
      if USE_EXPLORATION_FUNCTION:
          # Change this if you implement an exploration function:
@@ -129,12 +134,30 @@ def choose_next_action(s, r, terminated=False):
      # then use epsilon-greedy learning here.
      # In order to access q-values, simply get them from the dictionary, e.g.,
      # some_qval = Q_VALUES[(some_state, some_action)]
+     elif EPSILON > 0 or CUSTOM_EPSILON:
+         
+         # If we have a time-varying epislon, update the Epsilon value
+         # want a compromise between exploration and exploitation
+         # This function simply counts the fraction of unknown/unvisited states
+         # and uses that as epsilon
+         # lots of unknown Q vals = high epsilon = high exploration
+         if CUSTOM_EPSILON:
+            EPSILON = len([q for q in Q_VALUES if Q_VALUES[q] == 0]) / len(Q_VALUES)
+
+         if is_valid_goal_state(s): next_action = 'Exit'
+         elif np.random.rand() < EPSILON:
+             # act randomly
+             next_action = np.random.choice([a for a in ACTIONS if not a == 'Exit'])
+         else:
+             # follow policy
+             extract_policy([s], ACTIONS)
+             next_action = Policy[s]
+
 
 #*** ADD OR CHANGE CODE HERE ***     
-     some_action = ACTIONS[0] # a placeholder, so some action is returned.
-     LAST_ACTION = some_action # remember this for next time
+     LAST_ACTION = next_action # remember this for next time
      PREVIOUS_STATE = s        #    "       "    "   "    "
-     return some_action
+     return next_action
 
 Policy = {}
 def extract_policy(S, A):
@@ -144,7 +167,16 @@ def extract_policy(S, A):
    Reminder: goal states should map to the Exit action, and no other states
    should map to the Exit action.
    '''
-   global Policy
-   Policy = {}
+   global Policy, Q_VALUES
+   #Policy = {}
 #*** ADD OR CHANGE CODE HERE ***     
+   
+   for s in S:
+       if is_valid_goal_state(s):
+            Policy[s] = 'Exit'
+       elif s == Terminal_state:
+            Policy[s] = None
+       else:
+            Policy[s] = max([a for a in A if not a == 'Exit'], key=lambda a: Q_VALUES[(s,a)])
+
    return Policy

@@ -38,13 +38,8 @@ def one_step_of_VI(S, A, T, R, gamma, Vk):
    if not Q_Values_Dict:
        Q_Values_Dict = return_Q_values(S,A)
 
-   # NOTE: Necessary or not?
-   if not Vk:
-       for s in S: Vk[s] = 0
-   
    for s in S:
        for a in A:
-           result =  sum([T(s,a, sprime) * (R(s,a,sprime) + gamma * Vk[sprime]) for sprime in S])
            Q_Values_Dict[(s,a)] =  sum([T(s,a, sprime) * (R(s,a,sprime) + gamma * Vk[sprime]) for sprime in S])
 
        Vkplus1[s] = max( [Q_Values_Dict[(s,a)] for a in A])
@@ -66,10 +61,9 @@ def return_Q_values(S, A):
 
    # evaluates to False if empty
    if not Q_Values_Dict:
-       #NOTE: Do I have to worry if an action is applicable at a given state?
        Q_Values_Dict = {(s, a):0.0 for s in S for a in A}
 
-   return Q_Values_Dict # placeholder
+   return Q_Values_Dict 
 
 def extract_policy(S, A):
    '''Return a dictionary mapping states to actions. Obtain the policy
@@ -80,7 +74,6 @@ def extract_policy(S, A):
    '''
    global Policy
    Policy = {}
-   # Add code here
 
    Q_Values_Dict = return_Q_values(S,A) 
 

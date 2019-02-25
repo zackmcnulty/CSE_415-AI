@@ -12,7 +12,7 @@ solving the puzzle.
 
 '''
 
-import YourUWNetID_Q_Learn as Q_Learn
+import zmcnulty_Q_Learn as Q_Learn
 
 import tkinter as tk
 WIDTH = 650
@@ -685,6 +685,7 @@ def update_q_value(s, a, value):
       TK_Canvas.itemconfigure(text_item, text=qstr)
       print("In Vis.update_q_value; new q-value is "+str(value))
     except: print("No match in update_q_value for key "+str((s, a)))
+
     
 SV_RECTS = []        
 def TOH_state_vis(s):
