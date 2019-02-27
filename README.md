@@ -61,6 +61,14 @@
 - Q-value updates
 - 
 
+##### Lect 14: Probabilitistic Reasoning
+- Bayes Nets
+
+
+##### Lect 15: Markov Models
+- Reasoning over time and/or space
+- Markov Chains & Joint Probability Distributions
+
 
 ### HW topics
 
