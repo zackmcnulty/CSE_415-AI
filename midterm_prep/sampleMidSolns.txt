@@ -1,0 +1,85 @@
+Solutions to the Sample Midterm
+CSE 415, Spring 2016
+
+1. Watson
+
+2. AlphaGo
+
+3. A game such as Checkers is "solved" when a computer program
+  (such as Chinook) has been implemented and proved to be unbeatable.
+  
+4. Iterative deepening DFS : pros and cons...
+ a. pros.
+   Memory efficient.  OPEN list serves as a stack rather than a queue.
+   Finds an optimal path to the closest goal state as soon as it reaches that state.
+   Typically quite efficient IN SPITE OF THE REDUNDANT COMPUTATION.
+ b. Performs some redundant computation.
+    Is an example of a blind technique (not using any heuristic information).
+
+5. Operator for Tic-Tac-Toe:
+
+     Name = "Try to put an X in the Center."
+     Precondition =
+       lambda s: itIsXsTurn() and centerIsVacant()
+     State_Transformation = lambda s: putXinCenter(copy_state(s))
+
+   new_op = Operator(Name, Precondition, State_Transformation)
+
+6. Maze heuristics.
+  a. Both Euclidean h_e(n) and Manhattan h_m(h) distances to the goal
+     give admissible heuristics.
+  b. The Manhattan distance is no less efficient and possibly more efficient in
+      A* search, because   h_e(n) <= h_m(h) <= h(n).
+      The first inequality is a form of the triangle inequality for right triangles
+      (the hypotenuse is less than or equal to the sum of the other two sides).
+
+7. Zobrist hashing.
+  a. At start-up time, an array of random integers is generated -- typically one for each
+       possible combination of square on the board and kind of piece -- black king, white rook, etc.
+       If there are N squares on the board and M different kinds of pieces, then there are
+       N * M random integers.
+  b. The hash value for a state s is computed by starting with val = 0, and for every piece
+     on the board, finding the integer in the table associated with that square on the board
+     and type of piece, and bitwise Exclusive-ORing that integer with val.  I.e.,  val ^= r[sq, piece].
+
+     Alternatively, a hash value for a state can be computed from a combination of the parent state's
+     hash value and information about the move.  If the move involved taking a piece P from square
+     A and placing it on square B, then the parents hash value v is updated by exclusive-oring v
+     with each of the two random integers, one associated with (A, P) and the other associated
+     with (B, P).
+
+  c. In the first method, computing the hash value has cost linear in the number of pieces on the
+   board. The constant is small because each piece only requires an array lookup (to get the random
+   number associated with the piece and the square) and a bitwise exclusive-OR operation, which is
+   very efficient on computers.  This assumes the state representation includes a list of pieces and
+   where they are on the board. If it is a board array instead, then the cost is linear in the number
+   of squares on the board.
+   In the second method, the cost is essentially constant, because a change to the parent state
+   typically requires changing the positions of a small number of pieces (one or two for most chess
+   moves).  This might not be true in games like Go, where many stones could be removed in one move.
+
+  d. Hash table collisions are unlikely between similar states, because even the smallest change to
+   a state usually has a large change to the hash value of the state, due to the extreme change to
+   an integer caused by bitwise exclusive-OR with a random integer.
+   
+8. a.  Let C be the cost of the tour represented by the individual X, a list of cities.  We can define
+   F(X) the fitness of X as  1/C.  Clearly, the lower the cost of the tour, the highter the fitness
+   of the individual.
+
+   b.  Let X be the individual list of cities.  If X is not a tour, then make its fitness be
+   100 (m / n), where m is the number of distinct cities in X and n is the total number of
+   possible cities in the problem; if X is a tour, make its fitness be 100 + F(X) where F(X) is
+   defined as above.  Many other solutions are possible, but they should have the property that
+   any tour is more fit than any non-tour.
+
+9. a.  Draw one arrow per sentence.
+        There obviously should be 9 edges for the nine sentences.
+
+   b.  circle: {contraption, device, machine}
+
+   c.  Redundant edges:  (android, automaton), (bot, machine)
+
+   d.  Dotted edges: Let's assume the circled group is represented by contraption.
+          (android, contraption), (bot, contraption).
+
+

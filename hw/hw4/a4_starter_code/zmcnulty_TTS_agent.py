@@ -483,7 +483,6 @@ def DFS(current_state, vacancies, max_depth, use_default_move_ordering, alpha_be
 # ======================================================== Testing Code
 
 
-'''
 K = 3
 inital_board = \
             [['W', '-', '-', '-'],
@@ -508,4 +507,3 @@ print("eval, expand, eval count, max depth, ab cuts:", \
             alpha_beta=True,
             use_custom_static_eval_function =False , use_default_move_ordering=True))
 print(time.time() - start)
-'''

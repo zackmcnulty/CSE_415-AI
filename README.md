@@ -69,6 +69,13 @@
 - Reasoning over time and/or space
 - Markov Chains & Joint Probability Distributions
 
+##### Lect 16: Hidden Markov Models
+- Unknown States; Observations and updating beliefs
+
+##### Lect 17: Machine Learning Intro
+- Perceptrons
+- Activation Functions
+
 
 ### HW topics
 
@@ -94,3 +101,10 @@
 ##### HW5
 - Value Iteration - Towers of Hanoi agent
 - Q-learning
+
+##### Final Project
+- Baroque Chess Agent
+- Zobrish Hashing
+- Alpha Beta Pruning
+- Minimax
+- Static evaluation function
