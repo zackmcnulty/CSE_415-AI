@@ -76,6 +76,12 @@
 - Perceptrons
 - Activation Functions
 
+##### Lect 18: Natural Language Processing (NLP)
+- Bag Semantics
+- Syntax structure and fundamentals of grammer
+- Vector Representations
+
+
 
 ### HW topics
 
@@ -101,6 +107,14 @@
 ##### HW5
 - Value Iteration - Towers of Hanoi agent
 - Q-learning
+
+##### HW6
+- Final Review
+- Hidden Markov models
+- Perceptrons
+- Value Iteration
+- Q learning
+- Natural Language Processing (NLP)
 
 ##### Final Project
 - Baroque Chess Agent
