@@ -81,6 +81,9 @@
 - Syntax structure and fundamentals of grammer
 - Vector Representations
 
+##### Lect 19: Ethics of AI
+- Aslow's Law
+
 
 
 ### HW topics
