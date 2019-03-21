@@ -82,7 +82,8 @@
 - Vector Representations
 
 ##### Lect 19: Ethics of AI
-- Aslow's Law
+- Asimow's Law
+- The singularity
 
 
 
